@@ -1,0 +1,84 @@
+.page {
+  width: min(100% - 32px, 1080px);
+  margin-inline: auto;
+  padding-block: 36px 64px;
+}
+
+.header p {
+  margin: 0 0 7px;
+  color: #9a705e;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.header h1 {
+  margin: 0;
+  color: #342d28;
+  font-size: clamp(30px, 5vw, 42px);
+  line-height: 1.1;
+}
+
+.header span {
+  display: block;
+  margin-top: 10px;
+  color: #786d65;
+}
+
+.cards {
+  display: grid;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.cards a {
+  display: grid;
+  gap: 8px;
+  padding: 22px;
+  color: #342d28;
+  background: #fff;
+  border: 1px solid #eadfd5;
+  border-radius: 20px;
+  box-shadow: 0 12px 38px rgba(72, 52, 38, .06);
+  text-decoration: none;
+}
+
+.cards a:hover {
+  border-color: #d9b9a8;
+}
+
+.cards strong {
+  font-size: 18px;
+}
+
+.cards span {
+  color: #786d65;
+  line-height: 1.5;
+}
+
+.actions {
+  margin-top: 28px;
+}
+
+.actions a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding-inline: 18px;
+  color: #fff;
+  background: #d97865;
+  border-radius: 999px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.actions a:hover {
+  background: #bd6555;
+}
+
+@media (min-width: 680px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

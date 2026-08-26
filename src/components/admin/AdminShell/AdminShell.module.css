@@ -1,0 +1,85 @@
+.shell {
+  min-height: 100vh;
+  background: #f8f4ee;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px;
+  color: #fdf9f3;
+  background: #40362f;
+}
+
+.brand {
+  display: grid;
+  gap: 3px;
+  width: fit-content;
+  color: inherit;
+  font-size: 17px;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.brand span {
+  color: #d9c7b8;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.navigation a,
+.siteLink {
+  padding: 9px 12px;
+  color: #eee2d8;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.navigation a:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, .1);
+}
+
+.siteLink {
+  width: fit-content;
+  padding-inline: 0;
+  color: #d9c7b8;
+}
+
+.content {
+  min-width: 0;
+}
+
+@media (min-width: 900px) {
+  .shell {
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    padding: 30px 22px;
+  }
+
+  .navigation {
+    display: grid;
+    align-content: start;
+  }
+
+  .siteLink {
+    margin-top: auto;
+  }
+}

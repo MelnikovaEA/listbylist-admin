@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ChecklistStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AssetType {
+  PREVIEW_IMAGE
+  VIEW_IMAGE
+  DOWNLOAD_IMAGE
+  PDF
+  PINTEREST_IMAGE
+}
+
+model Category {
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug        String @unique
+  title       String
+  description String
+
+  checklists Checklist[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Checklist {
+  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug String @unique
+
+  title       String
+  subtitle    String?
+  intro       String
+  description String
+
+  seoTitle       String
+  seoDescription String
+
+  status ChecklistStatus @default(DRAFT)
+
+  categoryId String   @db.Uuid
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  items  ChecklistItem[]
+  assets ChecklistAsset[]
+  tags   ChecklistTag[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  publishedAt DateTime?
+
+  @@index([status])
+  @@index([categoryId])
+}
+
+model ChecklistItem {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  text      String
+  sortOrder Int
+
+  checklistId String    @db.Uuid
+  checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([checklistId])
+}
+
+model ChecklistAsset {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  type      AssetType
+  url       String
+  alt       String?
+  sortOrder Int       @default(0)
+  width     Int?
+  height    Int?
+  bytes     Int?
+  mimeType  String?
+
+  checklistId String    @db.Uuid
+  checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([checklistId])
+  @@index([type])
+}
+
+model Tag {
+  id    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug  String @unique
+  title String
+
+  checklists ChecklistTag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model ChecklistTag {
+  checklistId String @db.Uuid
+  tagId       String @db.Uuid
+
+  checklist Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  tag       Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([checklistId, tagId])
+}
