@@ -3,7 +3,24 @@ import styles from './ChecklistForm.module.css';
 
 type ChecklistFormProps = {
     created?: string;
+    updated?: string;
     error?: string;
+    action?: (formData: FormData) => void | Promise<void>;
+    initialValues?: {
+        title: string;
+        slug: string;
+        categorySlug: string;
+        categoryTitle: string;
+        categoryDescription: string;
+        status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+        subtitle: string;
+        intro: string;
+        description: string;
+        seoTitle: string;
+        seoDescription: string;
+        items: string;
+        tags: string;
+    };
 };
 
 function FieldTooltip({text}: { text: string }) {
@@ -19,12 +36,14 @@ function FieldTooltip({text}: { text: string }) {
     );
 }
 
-export function ChecklistForm({created, error}: ChecklistFormProps) {
+export function ChecklistForm({created, updated, error, action = createChecklistAction, initialValues}: ChecklistFormProps) {
+    const isEditing = Boolean(initialValues);
+
     return (
         <div className={styles.page}>
             <header className={styles.header}>
                 <p className={styles.eyebrow}>Локальная админка</p>
-                <h1 className={styles.title}>Добавить чек-лист</h1>
+                <h1 className={styles.title}>{isEditing ? 'Редактировать чек-лист' : 'Добавить чек-лист'}</h1>
                 <p className={styles.description}>
                     Заполни форму и загрузи исходный checklist.png и checklist.pdf.
                     WebP-версии для карточек и просмотра создадутся автоматически.
@@ -37,6 +56,10 @@ export function ChecklistForm({created, error}: ChecklistFormProps) {
                 </div>
             )}
 
+            {updated && (
+                <div className={styles.success}>Чек-лист «{updated}» обновлён.</div>
+            )}
+
             {error && (
                 <div className={styles.error}>
                     {error}
@@ -45,7 +68,7 @@ export function ChecklistForm({created, error}: ChecklistFormProps) {
 
             <form
                 className={styles.form}
-                action={createChecklistAction}
+                action={action}
             >
                 <section className={styles.section}>
                     <h2 className={styles.sectionTitle}>Основное</h2>
@@ -56,6 +79,7 @@ export function ChecklistForm({created, error}: ChecklistFormProps) {
                             <input
                                 name="title"
                                 required
+                                defaultValue={initialValues?.title}
                                 placeholder="Чек-лист для летнего пикника"
                             />
                         </label>
@@ -68,6 +92,8 @@ export function ChecklistForm({created, error}: ChecklistFormProps) {
                             <input
                                 name="slug"
                                 required
+                                readOnly={isEditing}
+                                defaultValue={initialValues?.slug}
                                 placeholder="letniy-piknik"
                             />
                         </label>
@@ -77,6 +103,7 @@ export function ChecklistForm({created, error}: ChecklistFormProps) {
                             <input
                                 name="categorySlug"
                                 required
+                                defaultValue={initialValues?.categorySlug}
                                 placeholder="seasonal"
                             />
                         </label>
@@ -86,6 +113,7 @@ export function ChecklistForm({created, error}: ChecklistFormProps) {
                             <input
                                 name="categoryTitle"
                                 required
+                                defaultValue={initialValues?.categoryTitle}
                                 placeholder="Сезонные"
                             />
                         </label>
@@ -95,13 +123,14 @@ export function ChecklistForm({created, error}: ChecklistFormProps) {
                         <span>Описание категории</span>
                         <input
                             name="categoryDescription"
+                            defaultValue={initialValues?.categoryDescription}
                             placeholder="Летние, зимние, праздничные и тематические чек-листы."
                         />
                     </label>
 
                     <label className={styles.field}>
                         <span>Статус</span>
-                        <select name="status" defaultValue="DRAFT">
+                        <select name="status" defaultValue={initialValues?.status ?? 'DRAFT'}>
                             <option value="DRAFT">DRAFT</option>
                             <option value="PUBLISHED">PUBLISHED</option>
                             <option value="ARCHIVED">ARCHIVED</option>
@@ -116,6 +145,7 @@ export function ChecklistForm({created, error}: ChecklistFormProps) {
                         <span>Подзаголовок</span>
                         <input
                             name="subtitle"
+                            defaultValue={initialValues?.subtitle}
                             placeholder="Что взять с собой на природу"
                         />
                     </label>
@@ -125,6 +155,7 @@ export function ChecklistForm({created, error}: ChecklistFormProps) {
                         <textarea
                             name="intro"
                             required
+                            defaultValue={initialValues?.intro}
                             placeholder="Короткое вступление для карточки и начала страницы."
                         />
                     </label>
@@ -134,6 +165,7 @@ export function ChecklistForm({created, error}: ChecklistFormProps) {
                         <textarea
                             name="description"
                             required
+                            defaultValue={initialValues?.description}
                             placeholder="Более подробное описание чек-листа."
                         />
                     </label>
@@ -147,6 +179,7 @@ export function ChecklistForm({created, error}: ChecklistFormProps) {
                         <input
                             name="seoTitle"
                             required
+                            defaultValue={initialValues?.seoTitle}
                             placeholder="Чек-лист для летнего пикника — скачать бесплатно"
                         />
                     </label>
@@ -156,6 +189,7 @@ export function ChecklistForm({created, error}: ChecklistFormProps) {
                         <textarea
                             name="seoDescription"
                             required
+                            defaultValue={initialValues?.seoDescription}
                             placeholder="Скачайте бесплатный чек-лист для летнего пикника в PNG или PDF."
                         />
                     </label>
@@ -169,6 +203,7 @@ export function ChecklistForm({created, error}: ChecklistFormProps) {
                         <textarea
                             name="items"
                             required
+                            defaultValue={initialValues?.items}
                             placeholder={`Плед\nВода\nСалфетки\nСредство от насекомых`}
                         />
                     </label>
@@ -211,6 +246,7 @@ export function ChecklistForm({created, error}: ChecklistFormProps) {
                         <span>Через запятую</span>
                         <input
                             name="tags"
+                            defaultValue={initialValues?.tags}
                             placeholder="лето, пикник, список вещей, сезонные"
                         />
                     </label>
@@ -218,7 +254,7 @@ export function ChecklistForm({created, error}: ChecklistFormProps) {
 
                 <div className={styles.footer}>
                     <button className={styles.submitButton} type="submit">
-                        Сохранить чек-лист
+                        {isEditing ? 'Сохранить изменения' : 'Сохранить чек-лист'}
                     </button>
 
                     <p className={styles.footerHint}>

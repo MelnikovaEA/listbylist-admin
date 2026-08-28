@@ -54,7 +54,7 @@ function getAssetMetadata(file: {
     };
 }
 
-export async function saveChecklist(formData: FormData) {
+export async function saveChecklist(formData: FormData, checklistId?: string) {
     const title = getString(formData, 'title');
     const slug = normalizeSlug(getString(formData, 'slug'));
 
@@ -132,14 +132,21 @@ export async function saveChecklist(formData: FormData) {
     }
 
     const existingChecklist = await prisma.checklist.findUnique({
-        where: {
-            slug,
-        },
+        where: checklistId ? { id: checklistId } : { slug },
         select: {
             id: true,
+            slug: true,
             publishedAt: true,
         },
     });
+
+    if (checklistId && !existingChecklist) {
+        throw new Error('Чек-лист не найден.');
+    }
+
+    if (checklistId && existingChecklist?.slug !== slug) {
+        throw new Error('Slug существующего чек-листа нельзя изменить.');
+    }
 
     await prisma.$transaction(async (tx) => {
         const category = await tx.category.upsert({
@@ -157,11 +164,7 @@ export async function saveChecklist(formData: FormData) {
             },
         });
 
-        const checklist = await tx.checklist.upsert({
-            where: {
-                slug,
-            },
-            update: {
+        const checklistData = {
                 title,
                 subtitle: subtitle || null,
                 intro,
@@ -174,20 +177,18 @@ export async function saveChecklist(formData: FormData) {
                     status === 'PUBLISHED'
                         ? existingChecklist?.publishedAt ?? new Date()
                         : null,
-            },
-            create: {
+        };
+        const checklist = existingChecklist
+            ? await tx.checklist.update({
+                where: { id: existingChecklist.id },
+                data: checklistData,
+            })
+            : await tx.checklist.create({
+                data: {
                 slug,
-                title,
-                subtitle: subtitle || null,
-                intro,
-                description,
-                seoTitle,
-                seoDescription,
-                status,
-                categoryId: category.id,
-                publishedAt: status === 'PUBLISHED' ? new Date() : null,
-            },
-        });
+                ...checklistData,
+                },
+            });
 
         await tx.checklistItem.deleteMany({
             where: {

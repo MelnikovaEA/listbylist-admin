@@ -182,6 +182,12 @@
     font: inherit;
 }
 
+.field input:read-only {
+    color: #7d7268;
+    background: #f3eee9;
+    cursor: not-allowed;
+}
+
 .field textarea {
     min-height: 130px;
     resize: vertical;
