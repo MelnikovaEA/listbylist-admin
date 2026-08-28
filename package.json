@@ -5,11 +5,13 @@
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1",
     "build": "prisma generate && next build",
-    "assets:generate": "node scripts/generate-preview-variants.mjs",
+    "assets:generate": "tsx scripts/generate-preview-variants.ts",
+    "s3:test": "tsx scripts/test-s3-connection.ts",
     "start": "next start --hostname 127.0.0.1",
     "lint": "eslint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1120.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "next": "16.2.10",
@@ -28,6 +30,7 @@
     "eslint-config-next": "16.2.10",
     "prisma": "^7.8.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.12",
     "typescript": "^5"
   }
 }

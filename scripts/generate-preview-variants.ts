@@ -9,8 +9,15 @@ const publicSiteDir = process.env.PUBLIC_SITE_DIR
   : path.resolve(process.cwd(), "..", "checklist-site");
 const checklistsDir = path.join(publicSiteDir, "public", "checklists");
 const widths = [400, 640, 960];
-const generatedAssets = [];
+type GeneratedAsset = {
+  slug: string;
+  preview: { url: string; width: number; height: number | null; bytes: number };
+  view: { url: string; width: number; height: number | null; bytes: number };
+};
 
+const generatedAssets: GeneratedAsset[] = [];
+
+async function main() {
 for (const entry of await readdir(checklistsDir, { withFileTypes: true })) {
   if (!entry.isDirectory()) continue;
 
@@ -105,3 +112,9 @@ try {
 }
 
 console.log(`Updated preview and view assets for ${generatedAssets.length} checklists in PostgreSQL.`);
+}
+
+main().catch((error: unknown) => {
+  console.error(error);
+  process.exitCode = 1;
+});
