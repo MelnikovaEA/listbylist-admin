@@ -6,7 +6,8 @@
     "dev": "next dev --hostname 127.0.0.1",
     "build": "prisma generate && next build",
     "assets:generate": "tsx scripts/generate-preview-variants.ts",
-    "s3:test": "tsx scripts/test-s3-connection.ts",
+    "s3:test": "node --conditions=react-server --import tsx scripts/test-s3-connection.ts",
+    "test:files": "node --conditions=react-server --import tsx --test src/lib/admin/checklistFileValidation.test.ts",
     "start": "next start --hostname 127.0.0.1",
     "lint": "eslint"
   },
@@ -18,6 +19,7 @@
     "pg": "^8.22.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "server-only": "^0.0.1",
     "sharp": "^0.35.3"
   },
   "devDependencies": {
