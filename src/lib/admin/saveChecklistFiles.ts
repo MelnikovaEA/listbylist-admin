@@ -2,6 +2,17 @@ import path from 'node:path';
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import sharp from 'sharp';
+import {
+    prepareChecklistAssetBundle,
+    uploadChecklistAssetBundle,
+    type ChecklistAssetBundle,
+    type PreparedChecklistAsset,
+} from './checklistAssetBundle';
+import {
+    isUploadedFile,
+    validatePdf,
+    validatePng,
+} from './checklistFileValidation';
 
 type ChecklistFileAsset = {
     exists: boolean;
@@ -19,10 +30,6 @@ export type ChecklistFileState = {
     image: ChecklistFileAsset;
     pdf: ChecklistFileAsset;
 };
-
-function isUploadedFile(value: FormDataEntryValue | null): value is File {
-    return value instanceof File && value.size > 0;
-}
 
 function assertFileExtension(file: File, allowedExtensions: string[], label: string) {
     const extension = path.extname(file.name).toLowerCase();
@@ -83,7 +90,75 @@ async function createWebpVariants(source: Buffer, checklistDir: string, viewPath
     ]);
 }
 
-export async function saveChecklistFiles(slug: string, formData: FormData): Promise<ChecklistFileState> {
+export type UploadedChecklistFiles = {
+    fileState: ChecklistFileState;
+    bundle: ChecklistAssetBundle;
+};
+
+function getPreparedAsset(
+    bundle: ChecklistAssetBundle,
+    role: PreparedChecklistAsset['role'],
+): PreparedChecklistAsset {
+    const asset = bundle.assets.find((candidate) => candidate.role === role);
+
+    if (!asset) {
+        throw new Error(`В комплекте отсутствует обязательный файл ${role}.`);
+    }
+
+    return asset;
+}
+
+function toFileAsset(asset: PreparedChecklistAsset): ChecklistFileAsset {
+    return {
+        exists: true,
+        url: asset.key,
+        sizeKb: Math.round(asset.bytes / 1024),
+        bytes: asset.bytes,
+        width: asset.width,
+        height: asset.height,
+        mimeType: asset.contentType,
+    };
+}
+
+export async function saveChecklistFiles(
+    slug: string,
+    formData: FormData,
+): Promise<UploadedChecklistFiles> {
+    const image = formData.get('image');
+    const pdf = formData.get('pdf');
+
+    if (!isUploadedFile(image)) {
+        throw new Error('Загрузи checklist.png.');
+    }
+
+    if (!isUploadedFile(pdf)) {
+        throw new Error('Загрузи checklist.pdf.');
+    }
+
+    const [validatedPng, validatedPdf] = await Promise.all([
+        validatePng(image),
+        validatePdf(pdf),
+    ]);
+    const bundle = await prepareChecklistAssetBundle({
+        slug,
+        png: validatedPng,
+        pdf: validatedPdf,
+    });
+
+    await uploadChecklistAssetBundle(bundle);
+
+    return {
+        bundle,
+        fileState: {
+            preview: toFileAsset(getPreparedAsset(bundle, 'PREVIEW_960')),
+            view: toFileAsset(getPreparedAsset(bundle, 'VIEW')),
+            image: toFileAsset(getPreparedAsset(bundle, 'DOWNLOAD_IMAGE')),
+            pdf: toFileAsset(getPreparedAsset(bundle, 'PDF')),
+        },
+    };
+}
+
+export async function saveLegacyChecklistFiles(slug: string, formData: FormData): Promise<ChecklistFileState> {
     const publicSiteDir = process.env.PUBLIC_SITE_DIR
         ? path.resolve(process.env.PUBLIC_SITE_DIR)
         : path.resolve(process.cwd(), '..', 'checklist-site');

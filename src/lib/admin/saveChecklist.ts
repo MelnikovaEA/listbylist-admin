@@ -1,10 +1,25 @@
-import { prisma } from '@/src/lib/prisma';
-import { normalizeSlug, normalizeTagSlug, validateLatinSlug } from './slug';
-import { saveChecklistFiles } from './saveChecklistFiles';
+import {prisma} from '@/src/lib/prisma';
+import {normalizeSlug, normalizeTagSlug, validateLatinSlug} from './slug';
+import {
+    saveChecklistFiles,
+    saveLegacyChecklistFiles,
+} from './saveChecklistFiles';
+import {
+    deleteChecklistAssetBundle,
+    type ChecklistAssetBundle,
+} from './checklistAssetBundle';
 
 type ChecklistStatusValue = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 
-const checklistStatuses = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
+function isChecklistStatus(
+    value: string,
+): value is ChecklistStatusValue {
+    return (
+        value === 'DRAFT' ||
+        value === 'PUBLISHED' ||
+        value === 'ARCHIVED'
+    );
+}
 
 function getString(formData: FormData, key: string) {
     const value = formData.get(key);
@@ -33,11 +48,7 @@ function getTags(formData: FormData, key: string) {
 function getStatus(formData: FormData): ChecklistStatusValue {
     const status = getString(formData, 'status');
 
-    if (checklistStatuses.includes(status as ChecklistStatusValue)) {
-        return status as ChecklistStatusValue;
-    }
-
-    return 'DRAFT';
+    return isChecklistStatus(status) ? status : 'DRAFT';
 }
 
 function getAssetMetadata(file: {
@@ -111,7 +122,34 @@ export async function saveChecklist(formData: FormData, checklistId?: string) {
         throw new Error('Добавь хотя бы один пункт чек-листа.');
     }
 
-    const fileState = await saveChecklistFiles(slug, formData);
+    const existingChecklist = await prisma.checklist.findUnique({
+        where: checklistId ? {id: checklistId} : {slug},
+        select: {
+            id: true,
+            slug: true,
+            publishedAt: true,
+        },
+    });
+
+    if (checklistId && !existingChecklist) {
+        throw new Error('Чек-лист не найден.');
+    }
+
+    if (checklistId && existingChecklist?.slug !== slug) {
+        throw new Error('Slug существующего чек-листа нельзя изменить.');
+    }
+
+    if (!checklistId && existingChecklist) {
+        throw new Error('Чек-лист с таким slug уже существует.');
+    }
+
+    let uploadedBundle: ChecklistAssetBundle | null = null;
+    const fileState = checklistId
+        ? await saveLegacyChecklistFiles(slug, formData)
+        : await saveChecklistFiles(slug, formData).then((uploaded) => {
+            uploadedBundle = uploaded.bundle;
+            return uploaded.fileState;
+        });
 
     if (status === 'PUBLISHED') {
         if (!fileState.preview.exists) {
@@ -131,40 +169,24 @@ export async function saveChecklist(formData: FormData, checklistId?: string) {
         }
     }
 
-    const existingChecklist = await prisma.checklist.findUnique({
-        where: checklistId ? { id: checklistId } : { slug },
-        select: {
-            id: true,
-            slug: true,
-            publishedAt: true,
-        },
-    });
+    try {
+        await prisma.$transaction(async (tx) => {
+            const category = await tx.category.upsert({
+                where: {
+                    slug: categorySlug,
+                },
+                update: {
+                    title: categoryTitle,
+                    description: categoryDescription,
+                },
+                create: {
+                    slug: categorySlug,
+                    title: categoryTitle,
+                    description: categoryDescription,
+                },
+            });
 
-    if (checklistId && !existingChecklist) {
-        throw new Error('Чек-лист не найден.');
-    }
-
-    if (checklistId && existingChecklist?.slug !== slug) {
-        throw new Error('Slug существующего чек-листа нельзя изменить.');
-    }
-
-    await prisma.$transaction(async (tx) => {
-        const category = await tx.category.upsert({
-            where: {
-                slug: categorySlug,
-            },
-            update: {
-                title: categoryTitle,
-                description: categoryDescription,
-            },
-            create: {
-                slug: categorySlug,
-                title: categoryTitle,
-                description: categoryDescription,
-            },
-        });
-
-        const checklistData = {
+            const checklistData = {
                 title,
                 subtitle: subtitle || null,
                 intro,
@@ -177,125 +199,141 @@ export async function saveChecklist(formData: FormData, checklistId?: string) {
                     status === 'PUBLISHED'
                         ? existingChecklist?.publishedAt ?? new Date()
                         : null,
-        };
-        const checklist = existingChecklist
-            ? await tx.checklist.update({
-                where: { id: existingChecklist.id },
-                data: checklistData,
-            })
-            : await tx.checklist.create({
-                data: {
-                slug,
-                ...checklistData,
+            };
+            const checklist = existingChecklist
+                ? await tx.checklist.update({
+                    where: {id: existingChecklist.id},
+                    data: checklistData,
+                })
+                : await tx.checklist.create({
+                    data: {
+                        slug,
+                        ...checklistData,
+                    },
+                });
+
+            await tx.checklistItem.deleteMany({
+                where: {
+                    checklistId: checklist.id,
                 },
             });
 
-        await tx.checklistItem.deleteMany({
-            where: {
-                checklistId: checklist.id,
-            },
-        });
-
-        await tx.checklistAsset.deleteMany({
-            where: {
-                checklistId: checklist.id,
-            },
-        });
-
-        await tx.checklistTag.deleteMany({
-            where: {
-                checklistId: checklist.id,
-            },
-        });
-
-        await tx.checklistItem.createMany({
-            data: items.map((text, index) => ({
-                text,
-                sortOrder: index + 1,
-                checklistId: checklist.id,
-            })),
-        });
-
-        const assets = [];
-
-        if (fileState.preview.exists) {
-            assets.push({
-                type: 'PREVIEW_IMAGE' as const,
-                url: fileState.preview.url,
-                alt: `Превью чек-листа: ${title}`,
-                sortOrder: 1,
-                checklistId: checklist.id,
-                ...getAssetMetadata(fileState.preview),
+            await tx.checklistAsset.deleteMany({
+                where: {
+                    checklistId: checklist.id,
+                },
             });
-        }
 
-        if (fileState.view.exists) {
-            assets.push({
-                type: 'VIEW_IMAGE' as const,
-                url: fileState.view.url,
-                alt: `Чек-лист для просмотра: ${title}`,
-                sortOrder: 2,
-                checklistId: checklist.id,
-                ...getAssetMetadata(fileState.view),
+            await tx.checklistTag.deleteMany({
+                where: {
+                    checklistId: checklist.id,
+                },
             });
-        }
 
-        if (fileState.image.exists) {
-            assets.push({
-                type: 'DOWNLOAD_IMAGE' as const,
-                url: fileState.image.url,
-                alt: `Картинка чек-листа: ${title}`,
-                sortOrder: 3,
-                checklistId: checklist.id,
-                ...getAssetMetadata(fileState.image),
+            await tx.checklistItem.createMany({
+                data: items.map((text, index) => ({
+                    text,
+                    sortOrder: index + 1,
+                    checklistId: checklist.id,
+                })),
             });
-        }
 
-        if (fileState.pdf.exists) {
-            assets.push({
-                type: 'PDF' as const,
-                url: fileState.pdf.url,
-                alt: `PDF чек-листа: ${title}`,
-                sortOrder: 4,
-                checklistId: checklist.id,
-                ...getAssetMetadata(fileState.pdf),
-            });
-        }
+            const assets = [];
 
-        if (assets.length > 0) {
-            await tx.checklistAsset.createMany({
-                data: assets,
-            });
-        }
-
-        for (const tagTitle of tags) {
-            const tagSlug = normalizeTagSlug(tagTitle);
-
-            if (!tagSlug) {
-                continue;
+            if (fileState.preview.exists) {
+                assets.push({
+                    type: 'PREVIEW_IMAGE' as const,
+                    url: fileState.preview.url,
+                    alt: `Превью чек-листа: ${title}`,
+                    sortOrder: 1,
+                    checklistId: checklist.id,
+                    ...getAssetMetadata(fileState.preview),
+                });
             }
 
-            const tag = await tx.tag.upsert({
-                where: {
-                    slug: tagSlug,
-                },
-                update: {
-                    title: tagTitle,
-                },
-                create: {
-                    slug: tagSlug,
-                    title: tagTitle,
-                },
-            });
-
-            await tx.checklistTag.create({
-                data: {
+            if (fileState.view.exists) {
+                assets.push({
+                    type: 'VIEW_IMAGE' as const,
+                    url: fileState.view.url,
+                    alt: `Чек-лист для просмотра: ${title}`,
+                    sortOrder: 2,
                     checklistId: checklist.id,
-                    tagId: tag.id,
-                },
-            });
+                    ...getAssetMetadata(fileState.view),
+                });
+            }
+
+            if (fileState.image.exists) {
+                assets.push({
+                    type: 'DOWNLOAD_IMAGE' as const,
+                    url: fileState.image.url,
+                    alt: `Картинка чек-листа: ${title}`,
+                    sortOrder: 3,
+                    checklistId: checklist.id,
+                    ...getAssetMetadata(fileState.image),
+                });
+            }
+
+            if (fileState.pdf.exists) {
+                assets.push({
+                    type: 'PDF' as const,
+                    url: fileState.pdf.url,
+                    alt: `PDF чек-листа: ${title}`,
+                    sortOrder: 4,
+                    checklistId: checklist.id,
+                    ...getAssetMetadata(fileState.pdf),
+                });
+            }
+
+            if (assets.length > 0) {
+                await tx.checklistAsset.createMany({
+                    data: assets,
+                });
+            }
+
+            for (const tagTitle of tags) {
+                const tagSlug = normalizeTagSlug(tagTitle);
+
+                if (!tagSlug) {
+                    continue;
+                }
+
+                const tag = await tx.tag.upsert({
+                    where: {
+                        slug: tagSlug,
+                    },
+                    update: {
+                        title: tagTitle,
+                    },
+                    create: {
+                        slug: tagSlug,
+                        title: tagTitle,
+                    },
+                });
+
+                await tx.checklistTag.create({
+                    data: {
+                        checklistId: checklist.id,
+                        tagId: tag.id,
+                    },
+                });
+            }
+        });
+    } catch (databaseError) {
+        if (!uploadedBundle) {
+            throw databaseError;
         }
-    });
+
+        try {
+            await deleteChecklistAssetBundle(uploadedBundle);
+        } catch (cleanupError) {
+            throw new AggregateError(
+                [databaseError, cleanupError],
+                'Не удалось сохранить чек-лист в БД и полностью удалить его файлы из хранилища.',
+            );
+        }
+
+        throw databaseError;
+    }
 
     return {
         title,

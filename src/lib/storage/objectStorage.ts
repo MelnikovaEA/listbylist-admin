@@ -9,11 +9,15 @@ import {
 
 export const ASSET_CACHE_CONTROL = 'public, max-age=2592000, immutable';
 
-type UploadObjectInput = {
+export type ObjectContentDisposition =
+    | 'inline'
+    | `attachment; filename="${string}"`;
+
+export type UploadObjectInput = {
     key: string;
     body: Buffer;
     contentType: string;
-    contentDisposition: 'inline' | `attachment; filename="${string}"`;
+    contentDisposition: ObjectContentDisposition;
     cacheControl?: string;
 };
 
