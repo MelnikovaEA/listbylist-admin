@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { ChecklistForm } from '@/src/components/admin/ChecklistForm/ChecklistForm';
+import {ChecklistForm} from '@/src/features/checklists/ui/ChecklistForm/ChecklistForm';
 import { prisma } from '@/src/lib/prisma';
 import { updateChecklistAction } from './actions';
 
@@ -7,11 +7,10 @@ export const runtime = 'nodejs';
 
 type EditChecklistPageProps = {
     params: Promise<{ id: string }>;
-    searchParams?: Promise<{ updated?: string; error?: string }>;
 };
 
-export default async function EditChecklistPage({ params, searchParams }: EditChecklistPageProps) {
-    const [{ id }, query] = await Promise.all([params, searchParams]);
+export default async function EditChecklistPage({ params }: EditChecklistPageProps) {
+    const {id} = await params;
     const checklist = await prisma.checklist.findUnique({
         where: { id },
         include: {
@@ -29,8 +28,6 @@ export default async function EditChecklistPage({ params, searchParams }: EditCh
         <main>
             <ChecklistForm
                 action={updateChecklistAction.bind(null, checklist.id)}
-                updated={query?.updated}
-                error={query?.error}
                 initialValues={{
                     title: checklist.title,
                     slug: checklist.slug,

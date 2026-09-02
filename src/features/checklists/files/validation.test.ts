@@ -6,7 +6,7 @@ import {
     MAX_PNG_BYTES,
     validatePdf,
     validatePng,
-} from './checklistFileValidation';
+} from './validation';
 
 test('validatePng accepts a real PNG and returns its metadata', async () => {
     const source = await sharp({

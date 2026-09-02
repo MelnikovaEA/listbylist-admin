@@ -1,4 +1,4 @@
-import styles from "@/src/components/admin/AdminDashboard/AdminDashboard.module.css";
+import styles from '../adminPage.module.css';
 
 export default function AdminSettingsPage() {
   return (

@@ -1,20 +1,11 @@
-import { ChecklistForm } from "@/src/components/admin/ChecklistForm/ChecklistForm";
+import {ChecklistForm} from '@/src/features/checklists/ui/ChecklistForm/ChecklistForm';
 
 export const runtime = "nodejs";
 
-type NewChecklistPageProps = {
-  searchParams?: Promise<{
-    created?: string;
-    error?: string;
-  }>;
-};
-
-export default async function NewChecklistPage({ searchParams }: NewChecklistPageProps) {
-  const params = await searchParams;
-
+export default function NewChecklistPage() {
   return (
     <main>
-      <ChecklistForm created={params?.created} error={params?.error} />
+      <ChecklistForm />
     </main>
   );
 }

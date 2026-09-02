@@ -193,6 +193,21 @@
     resize: vertical;
 }
 
+.field input[aria-invalid="true"],
+.field textarea[aria-invalid="true"],
+.field select[aria-invalid="true"],
+.fileField input[aria-invalid="true"] {
+    border-color: #c85b4a;
+    background: #fff7f5;
+}
+
+.fieldError {
+    color: #a33f31;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
 .fileField {
     padding: 14px 14px 25px;
     border: 1px dashed #e7cdbf;
@@ -231,6 +246,11 @@
 
 .submitButton:hover {
     background: #c86f5f;
+}
+
+.submitButton:disabled {
+    cursor: wait;
+    opacity: 0.65;
 }
 
 .footerHint {

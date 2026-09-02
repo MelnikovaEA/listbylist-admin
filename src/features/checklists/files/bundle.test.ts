@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import sharp from 'sharp';
-import { validatePdf, validatePng } from './checklistFileValidation';
+import { validatePdf, validatePng } from './validation';
 import {
     deleteChecklistAssetBundle,
     prepareChecklistAssetBundle,
     uploadChecklistAssetBundle,
-} from './checklistAssetBundle';
+} from './bundle';
 
 async function createTestBundle() {
     const pngBuffer = await sharp({

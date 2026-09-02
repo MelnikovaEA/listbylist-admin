@@ -7,12 +7,13 @@ import {
     uploadChecklistAssetBundle,
     type ChecklistAssetBundle,
     type PreparedChecklistAsset,
-} from './checklistAssetBundle';
+} from '../files/bundle';
 import {
     isUploadedFile,
     validatePdf,
     validatePng,
-} from './checklistFileValidation';
+} from '../files/validation';
+import {ChecklistFormFieldError} from '../form/errors';
 
 type ChecklistFileAsset = {
     exists: boolean;
@@ -95,6 +96,10 @@ export type UploadedChecklistFiles = {
     bundle: ChecklistAssetBundle;
 };
 
+function getValidationErrorMessage(error: unknown): string {
+    return error instanceof Error ? error.message : 'Не удалось проверить файл.';
+}
+
 function getPreparedAsset(
     bundle: ChecklistAssetBundle,
     role: PreparedChecklistAsset['role'],
@@ -128,16 +133,28 @@ export async function saveChecklistFiles(
     const pdf = formData.get('pdf');
 
     if (!isUploadedFile(image)) {
-        throw new Error('Загрузи checklist.png.');
+        throw new ChecklistFormFieldError('image', 'Загрузи checklist.png.');
     }
 
     if (!isUploadedFile(pdf)) {
-        throw new Error('Загрузи checklist.pdf.');
+        throw new ChecklistFormFieldError('pdf', 'Загрузи checklist.pdf.');
     }
 
     const [validatedPng, validatedPdf] = await Promise.all([
-        validatePng(image),
-        validatePdf(pdf),
+        validatePng(image).catch((error) => {
+            throw new ChecklistFormFieldError(
+                'image',
+                getValidationErrorMessage(error),
+                {cause: error},
+            );
+        }),
+        validatePdf(pdf).catch((error) => {
+            throw new ChecklistFormFieldError(
+                'pdf',
+                getValidationErrorMessage(error),
+                {cause: error},
+            );
+        }),
     ]);
     const bundle = await prepareChecklistAssetBundle({
         slug,

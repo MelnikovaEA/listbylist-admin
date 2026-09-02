@@ -2,8 +2,8 @@ import 'server-only';
 
 import { randomUUID } from 'node:crypto';
 import sharp from 'sharp';
-import type { ValidatedPdf, ValidatedPng } from './checklistFileValidation';
-import { MAX_PNG_PIXELS } from './checklistFileValidation';
+import type { ValidatedPdf, ValidatedPng } from './validation';
+import { MAX_PNG_PIXELS } from './validation';
 import {
     deleteObject,
     uploadObject,

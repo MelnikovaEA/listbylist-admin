@@ -1,5 +1,7 @@
 import {prisma} from '@/src/lib/prisma';
-import {normalizeSlug, normalizeTagSlug, validateLatinSlug} from './slug';
+import {normalizeTagSlug} from '../model/slug';
+import type {ChecklistFormValues} from '../form/schema';
+import {ChecklistFormFieldError} from '../form/errors';
 import {
     saveChecklistFiles,
     saveLegacyChecklistFiles,
@@ -7,49 +9,7 @@ import {
 import {
     deleteChecklistAssetBundle,
     type ChecklistAssetBundle,
-} from './checklistAssetBundle';
-
-type ChecklistStatusValue = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-
-function isChecklistStatus(
-    value: string,
-): value is ChecklistStatusValue {
-    return (
-        value === 'DRAFT' ||
-        value === 'PUBLISHED' ||
-        value === 'ARCHIVED'
-    );
-}
-
-function getString(formData: FormData, key: string) {
-    const value = formData.get(key);
-
-    if (typeof value !== 'string') {
-        return '';
-    }
-
-    return value.trim();
-}
-
-function getLines(formData: FormData, key: string) {
-    return getString(formData, key)
-        .split('\n')
-        .map((item) => item.trim())
-        .filter(Boolean);
-}
-
-function getTags(formData: FormData, key: string) {
-    return getString(formData, key)
-        .split(',')
-        .map((item) => item.trim())
-        .filter(Boolean);
-}
-
-function getStatus(formData: FormData): ChecklistStatusValue {
-    const status = getString(formData, 'status');
-
-    return isChecklistStatus(status) ? status : 'DRAFT';
-}
+} from '../files/bundle';
 
 function getAssetMetadata(file: {
     width: number | null;
@@ -65,62 +25,26 @@ function getAssetMetadata(file: {
     };
 }
 
-export async function saveChecklist(formData: FormData, checklistId?: string) {
-    const title = getString(formData, 'title');
-    const slug = normalizeSlug(getString(formData, 'slug'));
-
-    const categorySlug = normalizeSlug(getString(formData, 'categorySlug'));
-    const categoryTitle = getString(formData, 'categoryTitle');
-    const categoryDescription =
-        getString(formData, 'categoryDescription') ||
-        `Чек-листы из категории «${categoryTitle}».`;
-
-    const subtitle = getString(formData, 'subtitle');
-    const intro = getString(formData, 'intro');
-    const description = getString(formData, 'description');
-
-    const seoTitle = getString(formData, 'seoTitle');
-    const seoDescription = getString(formData, 'seoDescription');
-
-    const status = getStatus(formData);
-    const items = getLines(formData, 'items');
-    const tags = getTags(formData, 'tags');
-
-    if (!title) {
-        throw new Error('Заполни название чек-листа.');
-    }
-
-    if (!slug || !validateLatinSlug(slug)) {
-        throw new Error('Slug чек-листа должен быть латиницей: letniy-piknik.');
-    }
-
-    if (!categorySlug || !validateLatinSlug(categorySlug)) {
-        throw new Error('Slug категории должен быть латиницей: seasonal, home, travel.');
-    }
-
-    if (!categoryTitle) {
-        throw new Error('Заполни название категории.');
-    }
-
-    if (!intro) {
-        throw new Error('Заполни intro.');
-    }
-
-    if (!description) {
-        throw new Error('Заполни описание.');
-    }
-
-    if (!seoTitle) {
-        throw new Error('Заполни SEO title.');
-    }
-
-    if (!seoDescription) {
-        throw new Error('Заполни SEO description.');
-    }
-
-    if (items.length === 0) {
-        throw new Error('Добавь хотя бы один пункт чек-листа.');
-    }
+export async function saveChecklist(
+    values: ChecklistFormValues,
+    formData: FormData,
+    checklistId?: string,
+) {
+    const {
+        title,
+        slug,
+        categorySlug,
+        categoryTitle,
+        categoryDescription,
+        subtitle,
+        intro,
+        description,
+        seoTitle,
+        seoDescription,
+        status,
+        items,
+        tags,
+    } = values;
 
     const existingChecklist = await prisma.checklist.findUnique({
         where: checklistId ? {id: checklistId} : {slug},
@@ -136,11 +60,11 @@ export async function saveChecklist(formData: FormData, checklistId?: string) {
     }
 
     if (checklistId && existingChecklist?.slug !== slug) {
-        throw new Error('Slug существующего чек-листа нельзя изменить.');
+        throw new ChecklistFormFieldError('slug', 'Slug существующего чек-листа нельзя изменить.');
     }
 
     if (!checklistId && existingChecklist) {
-        throw new Error('Чек-лист с таким slug уже существует.');
+        throw new ChecklistFormFieldError('slug', 'Чек-лист с таким slug уже существует.');
     }
 
     let uploadedBundle: ChecklistAssetBundle | null = null;

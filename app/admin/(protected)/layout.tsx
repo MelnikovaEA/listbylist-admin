@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { assertAdminPageEnabled } from "@/src/lib/admin/adminGuard";
-import styles from "@/src/components/admin/AdminShell/AdminShell.module.css";
+import styles from './layout.module.css';
 
 export default function ProtectedAdminLayout({ children }: { children: ReactNode }) {
   assertAdminPageEnabled();
