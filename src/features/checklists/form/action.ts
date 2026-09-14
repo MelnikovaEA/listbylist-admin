@@ -14,6 +14,7 @@ export type ChecklistFormActionResult =
         success: true;
         title: string;
         slug: string;
+        warnings: string[];
     }
     | {
         success: false;
@@ -43,6 +44,7 @@ export async function saveChecklistFromForm(
             success: true,
             title: result.title,
             slug: result.slug,
+            warnings: result.warnings,
         };
     } catch (error) {
         if (error instanceof ChecklistFormFieldError) {

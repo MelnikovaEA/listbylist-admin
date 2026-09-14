@@ -31,6 +31,41 @@ export type ChecklistAssetBundle = {
     assets: PreparedChecklistAsset[];
 };
 
+export type ChecklistAssetBundleReference = {
+    assets: Array<Pick<PreparedChecklistAsset, 'key'>>;
+};
+
+const assetFileNames = [
+    'preview-400.webp',
+    'preview-640.webp',
+    'preview-960.webp',
+    'view.webp',
+    'checklist.png',
+    'checklist.pdf',
+] as const;
+
+export function getChecklistAssetBundleReference(
+    downloadImageKey: string,
+): ChecklistAssetBundleReference | null {
+    const suffix = '/checklist.png';
+
+    if (!downloadImageKey.startsWith('checklists/') || !downloadImageKey.endsWith(suffix)) {
+        return null;
+    }
+
+    const directory = downloadImageKey.slice(0, -suffix.length);
+
+    if (directory.split('/').length !== 3) {
+        return null;
+    }
+
+    return {
+        assets: assetFileNames.map((fileName) => ({
+            key: `${directory}/${fileName}`,
+        })),
+    };
+}
+
 type PrepareChecklistAssetBundleInput = {
     slug: string;
     png: ValidatedPng;
@@ -188,7 +223,7 @@ export async function uploadChecklistAssetBundle(
 }
 
 export async function deleteChecklistAssetBundle(
-    bundle: ChecklistAssetBundle,
+    bundle: ChecklistAssetBundleReference,
     remove: StorageOperations['remove'] = deleteObject,
 ): Promise<void> {
     const deleteResults = await Promise.allSettled(

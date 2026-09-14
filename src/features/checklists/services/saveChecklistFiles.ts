@@ -1,7 +1,5 @@
-import path from 'node:path';
-import { existsSync } from 'node:fs';
-import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
-import sharp from 'sharp';
+import 'server-only';
+
 import {
     prepareChecklistAssetBundle,
     uploadChecklistAssetBundle,
@@ -32,68 +30,20 @@ export type ChecklistFileState = {
     pdf: ChecklistFileAsset;
 };
 
-function assertFileExtension(file: File, allowedExtensions: string[], label: string) {
-    const extension = path.extname(file.name).toLowerCase();
-
-    if (!allowedExtensions.includes(extension)) {
-        throw new Error(`${label}: неправильный формат файла. Можно: ${allowedExtensions.join(', ')}`);
-    }
-}
-
-async function readImageAsset(filePath: string, url: string, mimeType: string): Promise<ChecklistFileAsset> {
-    if (!existsSync(filePath)) {
-        return { exists: false, url, sizeKb: null, bytes: null, width: null, height: null, mimeType };
-    }
-
-    const [fileStat, metadata] = await Promise.all([stat(filePath), sharp(filePath).metadata()]);
-
-    return {
-        exists: true,
-        url,
-        sizeKb: Math.round(fileStat.size / 1024),
-        bytes: fileStat.size,
-        width: metadata.width ?? null,
-        height: metadata.height ?? null,
-        mimeType,
+export type SavedChecklistFiles =
+    | {changed: false}
+    | {
+        changed: true;
+        fileState: ChecklistFileState;
+        bundle: ChecklistAssetBundle;
     };
-}
 
-async function readDocumentAsset(filePath: string, url: string): Promise<ChecklistFileAsset> {
-    if (!existsSync(filePath)) {
-        return { exists: false, url, sizeKb: null, bytes: null, width: null, height: null, mimeType: 'application/pdf' };
-    }
+type FileStorageOperations = {
+    upload: typeof uploadChecklistAssetBundle;
+};
 
-    const fileStat = await stat(filePath);
-
-    return {
-        exists: true,
-        url,
-        sizeKb: Math.round(fileStat.size / 1024),
-        bytes: fileStat.size,
-        width: null,
-        height: null,
-        mimeType: 'application/pdf',
-    };
-}
-
-async function createWebpVariants(source: Buffer, checklistDir: string, viewPath: string) {
-    await Promise.all([
-        ...[400, 640, 960].map((width) =>
-            sharp(source)
-                .resize({ width, withoutEnlargement: true })
-                .webp({ quality: 86, effort: 4 })
-                .toFile(path.join(checklistDir, `preview-${width}.webp`)),
-        ),
-        sharp(source)
-            .resize({ width: 1200, withoutEnlargement: true })
-            .webp({ quality: 88, effort: 4 })
-            .toFile(viewPath),
-    ]);
-}
-
-export type UploadedChecklistFiles = {
-    fileState: ChecklistFileState;
-    bundle: ChecklistAssetBundle;
+const defaultStorage: FileStorageOperations = {
+    upload: uploadChecklistAssetBundle,
 };
 
 function getValidationErrorMessage(error: unknown): string {
@@ -128,27 +78,53 @@ function toFileAsset(asset: PreparedChecklistAsset): ChecklistFileAsset {
 export async function saveChecklistFiles(
     slug: string,
     formData: FormData,
-): Promise<UploadedChecklistFiles> {
-    const image = formData.get('image');
-    const pdf = formData.get('pdf');
+    mode: 'create' | 'edit',
+    storage: FileStorageOperations = defaultStorage,
+): Promise<SavedChecklistFiles> {
+    const imageEntry = formData.get('image');
+    const pdfEntry = formData.get('pdf');
+    const imageUploaded = isUploadedFile(imageEntry);
+    const pdfUploaded = isUploadedFile(pdfEntry);
 
-    if (!isUploadedFile(image)) {
+    if (mode === 'edit' && !imageUploaded && !pdfUploaded) {
+        return {changed: false};
+    }
+
+    if (mode === 'create' && !imageUploaded) {
         throw new ChecklistFormFieldError('image', 'Загрузи checklist.png.');
     }
 
-    if (!isUploadedFile(pdf)) {
+    if (mode === 'create' && !pdfUploaded) {
         throw new ChecklistFormFieldError('pdf', 'Загрузи checklist.pdf.');
     }
 
+    if (imageUploaded && !pdfUploaded) {
+        throw new ChecklistFormFieldError(
+            'pdf',
+            'При замене checklist.png также загрузи новый checklist.pdf.',
+        );
+    }
+
+    if (pdfUploaded && !imageUploaded) {
+        throw new ChecklistFormFieldError(
+            'image',
+            'При замене checklist.pdf также загрузи новый checklist.png.',
+        );
+    }
+
+    if (!imageUploaded || !pdfUploaded) {
+        throw new Error('Не удалось определить комплект файлов чек-листа.');
+    }
+
     const [validatedPng, validatedPdf] = await Promise.all([
-        validatePng(image).catch((error) => {
+        validatePng(imageEntry).catch((error) => {
             throw new ChecklistFormFieldError(
                 'image',
                 getValidationErrorMessage(error),
                 {cause: error},
             );
         }),
-        validatePdf(pdf).catch((error) => {
+        validatePdf(pdfEntry).catch((error) => {
             throw new ChecklistFormFieldError(
                 'pdf',
                 getValidationErrorMessage(error),
@@ -162,9 +138,10 @@ export async function saveChecklistFiles(
         pdf: validatedPdf,
     });
 
-    await uploadChecklistAssetBundle(bundle);
+    await storage.upload(bundle);
 
     return {
+        changed: true,
         bundle,
         fileState: {
             preview: toFileAsset(getPreparedAsset(bundle, 'PREVIEW_960')),
@@ -172,50 +149,5 @@ export async function saveChecklistFiles(
             image: toFileAsset(getPreparedAsset(bundle, 'DOWNLOAD_IMAGE')),
             pdf: toFileAsset(getPreparedAsset(bundle, 'PDF')),
         },
-    };
-}
-
-export async function saveLegacyChecklistFiles(slug: string, formData: FormData): Promise<ChecklistFileState> {
-    const publicSiteDir = process.env.PUBLIC_SITE_DIR
-        ? path.resolve(process.env.PUBLIC_SITE_DIR)
-        : path.resolve(process.cwd(), '..', 'checklist-site');
-    const checklistDir = path.join(publicSiteDir, 'public', 'checklists', slug);
-    await mkdir(checklistDir, { recursive: true });
-
-    const previewPath = path.join(checklistDir, 'preview-960.webp');
-    const viewPath = path.join(checklistDir, 'view.webp');
-    const imagePath = path.join(checklistDir, 'checklist.png');
-    const pdfPath = path.join(checklistDir, 'checklist.pdf');
-    const image = formData.get('image');
-    const pdf = formData.get('pdf');
-
-    if (isUploadedFile(image)) {
-        assertFileExtension(image, ['.png'], 'Картинка');
-        const source = Buffer.from(await image.arrayBuffer());
-        const metadata = await sharp(source).metadata();
-
-        if (metadata.format !== 'png') {
-            throw new Error('Картинка должна быть настоящим PNG-файлом.');
-        }
-
-        await writeFile(imagePath, source);
-        await createWebpVariants(source, checklistDir, viewPath);
-    } else if (
-        existsSync(imagePath) &&
-        (![400, 640, 960].every((width) => existsSync(path.join(checklistDir, `preview-${width}.webp`))) || !existsSync(viewPath))
-    ) {
-        await createWebpVariants(await readFile(imagePath), checklistDir, viewPath);
-    }
-
-    if (isUploadedFile(pdf)) {
-        assertFileExtension(pdf, ['.pdf'], 'PDF');
-        await writeFile(pdfPath, Buffer.from(await pdf.arrayBuffer()));
-    }
-
-    return {
-        preview: await readImageAsset(previewPath, `/checklists/${slug}/preview-960.webp`, 'image/webp'),
-        view: await readImageAsset(viewPath, `/checklists/${slug}/view.webp`, 'image/webp'),
-        image: await readImageAsset(imagePath, `/checklists/${slug}/checklist.png`, 'image/png'),
-        pdf: await readDocumentAsset(pdfPath, `/checklists/${slug}/checklist.pdf`),
     };
 }

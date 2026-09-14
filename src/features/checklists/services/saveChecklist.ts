@@ -4,12 +4,17 @@ import type {ChecklistFormValues} from '../form/schema';
 import {ChecklistFormFieldError} from '../form/errors';
 import {
     saveChecklistFiles,
-    saveLegacyChecklistFiles,
 } from './saveChecklistFiles';
 import {
     deleteChecklistAssetBundle,
+    getChecklistAssetBundleReference,
     type ChecklistAssetBundle,
 } from '../files/bundle';
+import {
+    applyChecklistAssetChanges,
+    cleanupPreviousChecklistBundle,
+    rollbackUploadedChecklistBundle,
+} from './checklistAssetLifecycle';
 
 function getAssetMetadata(file: {
     width: number | null;
@@ -25,10 +30,23 @@ function getAssetMetadata(file: {
     };
 }
 
+type SaveChecklistDependencies = {
+    saveFiles: typeof saveChecklistFiles;
+    deleteBundle: typeof deleteChecklistAssetBundle;
+    logCleanupError: (message: string, error: unknown) => void;
+};
+
+const defaultDependencies: SaveChecklistDependencies = {
+    saveFiles: saveChecklistFiles,
+    deleteBundle: deleteChecklistAssetBundle,
+    logCleanupError: console.error,
+};
+
 export async function saveChecklist(
     values: ChecklistFormValues,
     formData: FormData,
     checklistId?: string,
+    dependencies: SaveChecklistDependencies = defaultDependencies,
 ) {
     const {
         title,
@@ -52,6 +70,12 @@ export async function saveChecklist(
             id: true,
             slug: true,
             publishedAt: true,
+            assets: {
+                select: {
+                    type: true,
+                    url: true,
+                },
+            },
         },
     });
 
@@ -67,28 +91,44 @@ export async function saveChecklist(
         throw new ChecklistFormFieldError('slug', 'Чек-лист с таким slug уже существует.');
     }
 
-    let uploadedBundle: ChecklistAssetBundle | null = null;
-    const fileState = checklistId
-        ? await saveLegacyChecklistFiles(slug, formData)
-        : await saveChecklistFiles(slug, formData).then((uploaded) => {
-            uploadedBundle = uploaded.bundle;
-            return uploaded.fileState;
-        });
+    const previousBundle = checklistId
+        ? getChecklistAssetBundleReference(
+            existingChecklist?.assets.find((asset) => asset.type === 'DOWNLOAD_IMAGE')?.url ?? '',
+        )
+        : null;
+    const savedFiles = await dependencies.saveFiles(
+        slug,
+        formData,
+        checklistId ? 'edit' : 'create',
+    );
+    const uploadedBundle: ChecklistAssetBundle | null = savedFiles.changed
+        ? savedFiles.bundle
+        : null;
 
     if (status === 'PUBLISHED') {
-        if (!fileState.preview.exists) {
+        const hasAsset = (type: 'PREVIEW_IMAGE' | 'VIEW_IMAGE' | 'DOWNLOAD_IMAGE' | 'PDF') =>
+            savedFiles.changed
+                ? {
+                    PREVIEW_IMAGE: savedFiles.fileState.preview.exists,
+                    VIEW_IMAGE: savedFiles.fileState.view.exists,
+                    DOWNLOAD_IMAGE: savedFiles.fileState.image.exists,
+                    PDF: savedFiles.fileState.pdf.exists,
+                }[type]
+                : existingChecklist?.assets.some((asset) => asset.type === type) ?? false;
+
+        if (!hasAsset('PREVIEW_IMAGE')) {
             throw new Error('Не удалось создать preview.webp.');
         }
 
-        if (!fileState.view.exists) {
+        if (!hasAsset('VIEW_IMAGE')) {
             throw new Error('Не удалось создать view.webp.');
         }
 
-        if (!fileState.image.exists) {
+        if (!hasAsset('DOWNLOAD_IMAGE')) {
             throw new Error('Для публикации нужен checklist.png.');
         }
 
-        if (!fileState.pdf.exists) {
+        if (!hasAsset('PDF')) {
             throw new Error('Для публикации нужен checklist.pdf.');
         }
     }
@@ -142,12 +182,6 @@ export async function saveChecklist(
                 },
             });
 
-            await tx.checklistAsset.deleteMany({
-                where: {
-                    checklistId: checklist.id,
-                },
-            });
-
             await tx.checklistTag.deleteMany({
                 where: {
                     checklistId: checklist.id,
@@ -162,9 +196,16 @@ export async function saveChecklist(
                 })),
             });
 
-            const assets = [];
+            await applyChecklistAssetChanges(savedFiles, async (fileState) => {
+                await tx.checklistAsset.deleteMany({
+                    where: {
+                        checklistId: checklist.id,
+                    },
+                });
 
-            if (fileState.preview.exists) {
+                const assets = [];
+
+                if (fileState.preview.exists) {
                 assets.push({
                     type: 'PREVIEW_IMAGE' as const,
                     url: fileState.preview.url,
@@ -173,9 +214,9 @@ export async function saveChecklist(
                     checklistId: checklist.id,
                     ...getAssetMetadata(fileState.preview),
                 });
-            }
+                }
 
-            if (fileState.view.exists) {
+                if (fileState.view.exists) {
                 assets.push({
                     type: 'VIEW_IMAGE' as const,
                     url: fileState.view.url,
@@ -184,9 +225,9 @@ export async function saveChecklist(
                     checklistId: checklist.id,
                     ...getAssetMetadata(fileState.view),
                 });
-            }
+                }
 
-            if (fileState.image.exists) {
+                if (fileState.image.exists) {
                 assets.push({
                     type: 'DOWNLOAD_IMAGE' as const,
                     url: fileState.image.url,
@@ -195,9 +236,9 @@ export async function saveChecklist(
                     checklistId: checklist.id,
                     ...getAssetMetadata(fileState.image),
                 });
-            }
+                }
 
-            if (fileState.pdf.exists) {
+                if (fileState.pdf.exists) {
                 assets.push({
                     type: 'PDF' as const,
                     url: fileState.pdf.url,
@@ -206,13 +247,14 @@ export async function saveChecklist(
                     checklistId: checklist.id,
                     ...getAssetMetadata(fileState.pdf),
                 });
-            }
+                }
 
-            if (assets.length > 0) {
-                await tx.checklistAsset.createMany({
-                    data: assets,
-                });
-            }
+                if (assets.length > 0) {
+                    await tx.checklistAsset.createMany({
+                        data: assets,
+                    });
+                }
+            });
 
             for (const tagTitle of tags) {
                 const tagSlug = normalizeTagSlug(tagTitle);
@@ -243,25 +285,23 @@ export async function saveChecklist(
             }
         });
     } catch (databaseError) {
-        if (!uploadedBundle) {
-            throw databaseError;
-        }
-
-        try {
-            await deleteChecklistAssetBundle(uploadedBundle);
-        } catch (cleanupError) {
-            throw new AggregateError(
-                [databaseError, cleanupError],
-                'Не удалось сохранить чек-лист в БД и полностью удалить его файлы из хранилища.',
-            );
-        }
-
-        throw databaseError;
+        await rollbackUploadedChecklistBundle(
+            databaseError,
+            uploadedBundle,
+            dependencies.deleteBundle,
+        );
     }
+
+    const warnings = await cleanupPreviousChecklistBundle(
+        uploadedBundle,
+        previousBundle,
+        dependencies.deleteBundle,
+        dependencies.logCleanupError,
+    );
 
     return {
         title,
         slug,
-        fileState,
+        warnings,
     };
 }

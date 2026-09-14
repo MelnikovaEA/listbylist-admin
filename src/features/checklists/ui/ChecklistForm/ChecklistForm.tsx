@@ -1,7 +1,7 @@
 'use client';
 
 import {zodResolver} from '@hookform/resolvers/zod';
-import {useState} from 'react';
+import {useState, type SubmitEvent} from 'react';
 import {useForm} from 'react-hook-form';
 import {createChecklistAction} from '@/app/admin/(protected)/checklists/new/actions';
 import type {ChecklistFormActionResult} from '../../form/action';
@@ -53,36 +53,36 @@ export function ChecklistForm({action = createChecklistAction, initialValues}: C
         return typeof clientError === 'string' ? clientError : serverError;
     };
 
-    const submitForm = handleSubmit(async (_values, event) => {
-        const form = event?.currentTarget;
-
-        if (!(form instanceof HTMLFormElement)) return;
+    const submitForm = (event: SubmitEvent<HTMLFormElement>) => {
+        const form = event.currentTarget;
         const formData = new FormData(form);
 
-        clearErrors();
-        setActionResult(null);
-        setUnexpectedError('');
+        return handleSubmit(async () => {
+            clearErrors();
+            setActionResult(null);
+            setUnexpectedError('');
 
-        try {
-            const result = await action(formData);
-            setActionResult(result);
+            try {
+                const result = await action(formData);
+                setActionResult(result);
 
-            if (!result.success) {
-                for (const [field, messages] of Object.entries(result.fieldErrors)) {
-                    if (field === 'image' || field === 'pdf' || !messages?.[0]) continue;
-                    setError(field as keyof ChecklistFormInput, {type: 'server', message: messages[0]});
+                if (!result.success) {
+                    for (const [field, messages] of Object.entries(result.fieldErrors)) {
+                        if (field === 'image' || field === 'pdf' || !messages?.[0]) continue;
+                        setError(field as keyof ChecklistFormInput, {type: 'server', message: messages[0]});
+                    }
+                    return;
                 }
-                return;
-            }
 
-            if (!isEditing) {
-                reset(emptyValues);
-                form.reset();
+                if (!isEditing) {
+                    reset(emptyValues);
+                    form.reset();
+                }
+            } catch {
+                setUnexpectedError('Не удалось отправить форму. Попробуй ещё раз.');
             }
-        } catch {
-            setUnexpectedError('Не удалось отправить форму. Попробуй ещё раз.');
-        }
-    });
+        })(event);
+    };
 
     const formErrors = actionResult && !actionResult.success ? actionResult.formErrors : [];
     return <div className={styles.page}>
@@ -95,6 +95,10 @@ export function ChecklistForm({action = createChecklistAction, initialValues}: C
         {actionResult?.success && <div className={styles.success} role="status">
             Чек-лист «{actionResult.title}» {isEditing ? 'обновлён' : 'сохранён'}.
         </div>}
+        {actionResult?.success && actionResult.warnings.length > 0 &&
+            <div className={styles.warning} role="alert">
+                {actionResult.warnings.join(' ')}
+            </div>}
         {(unexpectedError || formErrors.length > 0) && <div className={styles.error} role="alert">
             {unexpectedError || formErrors.join(' ')}
         </div>}
