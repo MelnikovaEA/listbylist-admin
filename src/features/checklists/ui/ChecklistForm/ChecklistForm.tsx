@@ -10,11 +10,14 @@ import {
     type ChecklistFormInput,
     type ChecklistFormValues,
 } from '../../form/schema';
+import {ChecklistFileFields} from './ChecklistFileFields';
+import {FieldError, FieldTooltip} from './FieldFeedback';
 import styles from './ChecklistForm.module.css';
 
 type ChecklistFormProps = {
     action?: (formData: FormData) => Promise<ChecklistFormActionResult>;
     initialValues?: ChecklistFormInput;
+    initialPreviewUrl?: string | null;
 };
 
 const emptyValues: ChecklistFormInput = {
@@ -23,22 +26,17 @@ const emptyValues: ChecklistFormInput = {
     seoDescription: '', items: '', tags: '',
 };
 
-function FieldTooltip({text}: { text: string }) {
-    return <span className={styles.tooltipWrap}>
-        <span className={styles.tooltipTrigger} tabIndex={0} aria-label={text}>?</span>
-        <span className={styles.tooltipBubble} role="tooltip">{text}</span>
-    </span>;
-}
-
-function FieldError({message}: { message?: string }) {
-    return message ? <span className={styles.fieldError}>{message}</span> : null;
-}
-
-export function ChecklistForm({action = createChecklistAction, initialValues}: ChecklistFormProps) {
+export function ChecklistForm({
+    action = createChecklistAction,
+    initialValues,
+    initialPreviewUrl = null,
+}: ChecklistFormProps) {
     const isEditing = Boolean(initialValues);
+    const [fileFieldsVersion, setFileFieldsVersion] = useState(0);
+    const [hasSelectedFiles, setHasSelectedFiles] = useState(false);
     const [actionResult, setActionResult] = useState<ChecklistFormActionResult | null>(null);
     const [unexpectedError, setUnexpectedError] = useState('');
-    const {register, handleSubmit, reset, setError, clearErrors, formState: {errors, isSubmitting}} =
+    const {register, handleSubmit, reset, setError, clearErrors, getValues, formState: {errors, isDirty, isSubmitting}} =
         useForm<ChecklistFormInput, unknown, ChecklistFormValues>({
             resolver: zodResolver(checklistFormSchema),
             defaultValues: initialValues ?? emptyValues,
@@ -53,7 +51,17 @@ export function ChecklistForm({action = createChecklistAction, initialValues}: C
         return typeof clientError === 'string' ? clientError : serverError;
     };
 
+    const handleFormChange = () => {
+        setActionResult(null);
+        setUnexpectedError('');
+    };
+
     const submitForm = (event: SubmitEvent<HTMLFormElement>) => {
+        if (isEditing && !isDirty && !hasSelectedFiles) {
+            event.preventDefault();
+            return;
+        }
+
         const form = event.currentTarget;
         const formData = new FormData(form);
 
@@ -74,7 +82,12 @@ export function ChecklistForm({action = createChecklistAction, initialValues}: C
                     return;
                 }
 
-                if (!isEditing) {
+                setHasSelectedFiles(false);
+                setFileFieldsVersion(version => version + 1);
+
+                if (isEditing) {
+                    reset(getValues());
+                } else {
                     reset(emptyValues);
                     form.reset();
                 }
@@ -92,18 +105,25 @@ export function ChecklistForm({action = createChecklistAction, initialValues}: C
             <p className={styles.description}>Заполни форму и загрузи исходный checklist.png и checklist.pdf. WebP-версии для карточек и просмотра создадутся автоматически.</p>
         </header>
 
-        {actionResult?.success && <div className={styles.success} role="status">
-            Чек-лист «{actionResult.title}» {isEditing ? 'обновлён' : 'сохранён'}.
-        </div>}
-        {actionResult?.success && actionResult.warnings.length > 0 &&
-            <div className={styles.warning} role="alert">
+        {actionResult?.success && <div className={styles.resultNotice}>
+            <button
+                className={styles.resultNoticeClose}
+                type="button"
+                onClick={() => setActionResult(null)}
+                aria-label="Закрыть уведомление"
+            >×</button>
+            <div className={styles.success} role="status">
+                Чек-лист «{actionResult.title}» {isEditing ? 'обновлён' : 'сохранён'}.
+            </div>
+            {actionResult.warnings.length > 0 && <div className={styles.warning} role="alert">
                 {actionResult.warnings.join(' ')}
             </div>}
+        </div>}
         {(unexpectedError || formErrors.length > 0) && <div className={styles.error} role="alert">
             {unexpectedError || formErrors.join(' ')}
         </div>}
 
-        <form className={styles.form} onSubmit={submitForm} noValidate>
+        <form className={styles.form} onChange={handleFormChange} onSubmit={submitForm} noValidate>
             <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>Основное</h2>
                 <div className={styles.gridTwo}>
@@ -171,19 +191,14 @@ export function ChecklistForm({action = createChecklistAction, initialValues}: C
                 </label>
             </section>
 
-            <section className={styles.section}>
-                <h2 className={styles.sectionTitle}>Файлы</h2>
-                <div className={styles.gridThree}>
-                    <label className={styles.fileField}><span className={styles.labelText}>checklist.png <FieldTooltip text="Оригинал из Canva. Из него автоматически создадутся preview.webp и view.webp." /></span>
-                        <input name="image" type="file" accept=".png,image/png" aria-invalid={Boolean(getFieldError('image'))} />
-                        <FieldError message={getFieldError('image')} />
-                    </label>
-                    <label className={styles.fileField}><span className={styles.labelText}>checklist.pdf <FieldTooltip text="PDF для печати." /></span>
-                        <input name="pdf" type="file" accept=".pdf,application/pdf" aria-invalid={Boolean(getFieldError('pdf'))} />
-                        <FieldError message={getFieldError('pdf')} />
-                    </label>
-                </div>
-            </section>
+            <ChecklistFileFields
+                key={fileFieldsVersion}
+                imageError={getFieldError('image')}
+                initialPreviewUrl={initialPreviewUrl}
+                isEditing={isEditing}
+                onSelectionChange={setHasSelectedFiles}
+                pdfError={getFieldError('pdf')}
+            />
 
             <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>Теги</h2>
@@ -193,7 +208,12 @@ export function ChecklistForm({action = createChecklistAction, initialValues}: C
             </section>
 
             <div className={styles.footer}>
-                <button className={styles.submitButton} type="submit" disabled={isSubmitting}>
+                <button
+                    className={styles.submitButton}
+                    type="submit"
+                    disabled={isSubmitting || (isEditing && !isDirty && !hasSelectedFiles)}
+                    aria-busy={isSubmitting}
+                >
                     {isSubmitting ? 'Сохраняю…' : isEditing ? 'Сохранить изменения' : 'Сохранить чек-лист'}
                 </button>
                 <p className={styles.footerHint}>После сохранения проверь страницу чек-листа и сделай build.</p>

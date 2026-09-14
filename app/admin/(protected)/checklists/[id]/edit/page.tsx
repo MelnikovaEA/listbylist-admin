@@ -1,5 +1,9 @@
 import { notFound } from 'next/navigation';
 import {ChecklistForm} from '@/src/features/checklists/ui/ChecklistForm/ChecklistForm';
+import {
+    checklistPreviewAssetQuery,
+    getChecklistPreviewUrl,
+} from '@/src/features/checklists/queries/checklistPreview';
 import { prisma } from '@/src/lib/prisma';
 import { updateChecklistAction } from './actions';
 
@@ -17,6 +21,7 @@ export default async function EditChecklistPage({ params }: EditChecklistPagePro
             category: true,
             items: { orderBy: { sortOrder: 'asc' } },
             tags: { include: { tag: true } },
+            assets: checklistPreviewAssetQuery,
         },
     });
 
@@ -24,10 +29,13 @@ export default async function EditChecklistPage({ params }: EditChecklistPagePro
         notFound();
     }
 
+    const previewUrl = getChecklistPreviewUrl(checklist.assets);
+
     return (
         <main>
             <ChecklistForm
                 action={updateChecklistAction.bind(null, checklist.id)}
+                initialPreviewUrl={previewUrl}
                 initialValues={{
                     title: checklist.title,
                     slug: checklist.slug,

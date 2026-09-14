@@ -2,6 +2,7 @@ export type ChecklistTableItem = {
     id: string;
     slug: string;
     title: string;
+    previewUrl: string | null;
     subtitle: string | null;
     intro: string;
     description: string;

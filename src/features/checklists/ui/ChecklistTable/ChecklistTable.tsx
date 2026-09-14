@@ -52,7 +52,7 @@ export function ChecklistTable({checklists, publicSiteUrl, deleteAction}: Checkl
             <DragScroll>
                 <table className={styles.table}>
                     <thead><tr>
-                        <th>ID</th><th>Slug</th><th>Название</th><th>Подзаголовок</th>
+                        <th>ID</th><th>Slug</th><th>Название</th><th>Превью</th><th>Подзаголовок</th>
                         <th>Intro</th><th>Описание</th><th>SEO title</th><th>SEO description</th>
                         <th>Статус</th><th>Category ID</th><th>Категория</th><th>Теги</th>
                         <th>Пункты</th><th>Файлы</th><th>Опубликован</th><th>Создан</th><th>Обновлён</th>
@@ -62,6 +62,18 @@ export function ChecklistTable({checklists, publicSiteUrl, deleteAction}: Checkl
                         <td className={styles.idCell}>{checklist.id}</td>
                         <td className={styles.slugCell}>{checklist.slug}</td>
                         <td className={styles.titleCell}><strong>{checklist.title}</strong></td>
+                        <td>{checklist.previewUrl
+                            // The asset is already an optimized WebP and is intentionally loaded directly from S3.
+                            // eslint-disable-next-line @next/next/no-img-element
+                            ? <img
+                                className={styles.preview}
+                                src={checklist.previewUrl}
+                                alt={'Превью чек-листа «' + checklist.title + '»'}
+                                width={72}
+                                height={100}
+                                loading="lazy"
+                            />
+                            : 'Файл недоступен'}</td>
                         <td className={styles.textCell}>{checklist.subtitle || '—'}</td>
                         <td className={styles.textCell}>{checklist.intro}</td>
                         <td className={styles.textCell}>{checklist.description}</td>

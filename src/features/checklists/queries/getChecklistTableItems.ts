@@ -2,6 +2,10 @@ import 'server-only';
 
 import {prisma} from '@/src/lib/prisma';
 import type {ChecklistTableItem} from '../model/checklistTableItem';
+import {
+    checklistPreviewAssetQuery,
+    getChecklistPreviewUrl,
+} from './checklistPreview';
 
 export async function getChecklistTableItems(): Promise<ChecklistTableItem[]> {
     const checklists = await prisma.checklist.findMany({
@@ -17,6 +21,7 @@ export async function getChecklistTableItems(): Promise<ChecklistTableItem[]> {
                     tag: {select: {id: true, title: true}},
                 },
             },
+            assets: checklistPreviewAssetQuery,
         },
     });
 
@@ -24,6 +29,7 @@ export async function getChecklistTableItems(): Promise<ChecklistTableItem[]> {
         id: checklist.id,
         slug: checklist.slug,
         title: checklist.title,
+        previewUrl: getChecklistPreviewUrl(checklist.assets),
         subtitle: checklist.subtitle,
         intro: checklist.intro,
         description: checklist.description,
