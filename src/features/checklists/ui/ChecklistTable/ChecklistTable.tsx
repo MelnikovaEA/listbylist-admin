@@ -1,5 +1,9 @@
+'use client';
+
+import {useActionState} from 'react';
 import Link from 'next/link';
 import type {ChecklistTableItem} from '../../model/checklistTableItem';
+import type {DeleteChecklistResult} from '../../services/deleteChecklist';
 import {DeleteChecklistButton} from './DeleteChecklistButton';
 import {DragScroll} from './DragScroll';
 import styles from './ChecklistTable.module.css';
@@ -7,7 +11,10 @@ import styles from './ChecklistTable.module.css';
 type ChecklistTableProps = {
     checklists: ChecklistTableItem[];
     publicSiteUrl: string;
-    deleteAction: (id: string) => Promise<void>;
+    deleteAction: (
+        previousState: DeleteChecklistResult,
+        formData: FormData,
+    ) => Promise<DeleteChecklistResult>;
 };
 
 const statusLabels = {
@@ -38,6 +45,11 @@ function formatDate(value: Date | null): string {
 }
 
 export function ChecklistTable({checklists, publicSiteUrl, deleteAction}: ChecklistTableProps) {
+    const [deleteResult, submitDelete] = useActionState(deleteAction, {
+        deleted: false,
+        warnings: [],
+    });
+
     return <main className={styles.page}>
         <div className={styles.headerRow}>
             <header className={styles.header}>
@@ -47,6 +59,10 @@ export function ChecklistTable({checklists, publicSiteUrl, deleteAction}: Checkl
             </header>
             <Link className={styles.createLink} href="/admin/checklists/new">Создать чек-лист</Link>
         </div>
+
+        {deleteResult.warnings.map((warning) =>
+            <p className={styles.warning} role="status" key={warning}>{warning}</p>,
+        )}
 
         {checklists.length === 0 ? <div className={styles.empty}>Пока нет ни одного чек-листа.</div> :
             <DragScroll>
@@ -112,7 +128,8 @@ export function ChecklistTable({checklists, publicSiteUrl, deleteAction}: Checkl
                             ><svg viewBox="0 0 24 24" aria-hidden="true">
                                 <path d="M4 20h4.2L19 9.2 14.8 5 4 15.8V20Zm2-3.4 8.8-8.8 1.4 1.4L7.4 18H6v-1.4ZM17.6 2.2a2 2 0 0 1 2.8 0l1.4 1.4a2 2 0 0 1 0 2.8L20.4 7.8 16.2 3.6l1.4-1.4Z" />
                             </svg></Link>
-                            <form action={deleteAction.bind(null, checklist.id)}>
+                            <form action={submitDelete}>
+                                <input type="hidden" name="id" value={checklist.id} />
                                 <DeleteChecklistButton title={checklist.title} />
                             </form>
                         </div></td>

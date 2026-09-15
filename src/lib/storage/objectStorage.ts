@@ -3,6 +3,7 @@ import 'server-only';
 import {
     DeleteObjectCommand,
     HeadObjectCommand,
+    ListObjectsV2Command,
     PutObjectCommand,
     S3Client,
 } from '@aws-sdk/client-s3';
@@ -19,6 +20,17 @@ export type UploadObjectInput = {
     contentType: string;
     contentDisposition: ObjectContentDisposition;
     cacheControl?: string;
+};
+
+type ObjectStoragePrefixOperations = {
+    listPage: (
+        prefix: string,
+        continuationToken?: string,
+    ) => Promise<{
+        keys: string[];
+        nextContinuationToken?: string;
+    }>;
+    remove: (key: string) => Promise<void>;
 };
 
 type ObjectStorageConfig = {
@@ -125,4 +137,77 @@ export async function deleteObject(key: string): Promise<void> {
     await getObjectStorageClient().send(
         new DeleteObjectCommand({ Bucket: bucket, Key: key }),
     );
+}
+
+async function listObjectPage(
+    prefix: string,
+    continuationToken?: string,
+): Promise<{keys: string[]; nextContinuationToken?: string}> {
+    const {bucket} = getObjectStorageConfig();
+    const result = await getObjectStorageClient().send(
+        new ListObjectsV2Command({
+            Bucket: bucket,
+            Prefix: prefix,
+            ContinuationToken: continuationToken,
+        }),
+    );
+
+    if (result.IsTruncated && !result.NextContinuationToken) {
+        throw new Error('S3 вернул неполную страницу объектов без continuation token.');
+    }
+
+    return {
+        keys: result.Contents?.flatMap((object) => object.Key ? [object.Key] : []) ?? [],
+        nextContinuationToken: result.IsTruncated
+            ? result.NextContinuationToken
+            : undefined,
+    };
+}
+
+const defaultPrefixOperations: ObjectStoragePrefixOperations = {
+    listPage: listObjectPage,
+    remove: deleteObject,
+};
+
+export async function deleteObjectsByPrefix(
+    prefix: string,
+    operations: ObjectStoragePrefixOperations = defaultPrefixOperations,
+): Promise<void> {
+    const prefixSegments = prefix.split('/').filter(Boolean);
+
+    if (
+        prefix.startsWith('/') ||
+        !prefix.endsWith('/') ||
+        prefixSegments.length < 2 ||
+        prefixSegments.some((segment) => segment === '.' || segment === '..')
+    ) {
+        throw new Error('Некорректный prefix для удаления объектов из S3.');
+    }
+
+    const deleteErrors: unknown[] = [];
+    let continuationToken: string | undefined;
+
+    do {
+        const page = await operations.listPage(prefix, continuationToken);
+
+        if (page.keys.some((key) => !key.startsWith(prefix))) {
+            throw new Error('S3 вернул объект за пределами удаляемого prefix.');
+        }
+
+        const deleteResults = await Promise.allSettled(
+            page.keys.map((key) => operations.remove(key)),
+        );
+
+        deleteErrors.push(...deleteResults.flatMap((result) =>
+            result.status === 'rejected' ? [result.reason] : [],
+        ));
+        continuationToken = page.nextContinuationToken;
+    } while (continuationToken);
+
+    if (deleteErrors.length > 0) {
+        throw new AggregateError(
+            deleteErrors,
+            `Не удалось удалить все объекты S3 по prefix ${prefix}.`,
+        );
+    }
 }

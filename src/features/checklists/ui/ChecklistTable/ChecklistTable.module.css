@@ -29,6 +29,15 @@
 .createLink { min-height: 44px; padding-inline: 18px; color: #fff; background: #d97865; }
 .createLink:hover { background: #bd6555; }
 
+.warning {
+    margin: 20px 0 0;
+    padding: 12px 14px;
+    border: 1px solid #e5bd75;
+    border-radius: 12px;
+    color: #765b23;
+    background: #fff7df;
+}
+
 .tableWrap {
     overflow-x: auto;
     margin-top: 28px;

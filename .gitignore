@@ -50,3 +50,6 @@ next-env.d.ts
 # IDE
 .idea/
 *.iml
+
+# local Codex project instructions
+/AGENTS.override.md
