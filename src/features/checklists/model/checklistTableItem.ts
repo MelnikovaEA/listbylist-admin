@@ -1,8 +1,11 @@
+import type {ChecklistAssetLink} from '../files/links';
+
 export type ChecklistTableItem = {
     id: string;
     slug: string;
     title: string;
     previewUrl: string | null;
+    files: ChecklistAssetLink[];
     subtitle: string | null;
     intro: string;
     description: string;

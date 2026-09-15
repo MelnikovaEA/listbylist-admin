@@ -10,7 +10,6 @@ import styles from './ChecklistTable.module.css';
 
 type ChecklistTableProps = {
     checklists: ChecklistTableItem[];
-    publicSiteUrl: string;
     deleteAction: (
         previousState: DeleteChecklistResult,
         formData: FormData,
@@ -27,14 +26,6 @@ const statusClassNames = {
     PUBLISHED: 'published',
     ARCHIVED: 'archived',
 } as const;
-const checklistFiles = [
-    'preview-400.webp',
-    'preview-640.webp',
-    'preview-960.webp',
-    'view.webp',
-    'checklist.png',
-    'checklist.pdf',
-] as const;
 const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
     dateStyle: 'medium',
     timeStyle: 'short',
@@ -44,7 +35,7 @@ function formatDate(value: Date | null): string {
     return value ? dateFormatter.format(value) : '—';
 }
 
-export function ChecklistTable({checklists, publicSiteUrl, deleteAction}: ChecklistTableProps) {
+export function ChecklistTable({checklists, deleteAction}: ChecklistTableProps) {
     const [deleteResult, submitDelete] = useActionState(deleteAction, {
         deleted: false,
         warnings: [],
@@ -108,14 +99,14 @@ export function ChecklistTable({checklists, publicSiteUrl, deleteAction}: Checkl
                             ? <ol className={styles.items}>{checklist.items.map((item) =>
                                 <li key={item.id}>{item.text}</li>)}</ol>
                             : '—'}</td>
-                        <td className={styles.listCell}><div className={styles.assetLinks}>
-                            {checklistFiles.map((fileName) => <a
-                                key={fileName}
-                                href={new URL(`/checklists/${checklist.slug}/${fileName}`, publicSiteUrl).toString()}
+                        <td className={styles.listCell}>{checklist.files.length > 0
+                            ? <div className={styles.assetLinks}>{checklist.files.map((file) => <a
+                                key={file.name}
+                                href={file.url}
                                 target="_blank"
                                 rel="noreferrer"
-                            >{fileName}</a>)}
-                        </div></td>
+                            >{file.name}</a>)}</div>
+                            : 'Файлы не найдены'}</td>
                         <td className={styles.dateCell}>{formatDate(checklist.publishedAt)}</td>
                         <td className={styles.dateCell}>{formatDate(checklist.createdAt)}</td>
                         <td className={styles.dateCell}>{formatDate(checklist.updatedAt)}</td>
