@@ -327,6 +327,63 @@
     line-height: 1.4;
 }
 
+.combobox {
+    position: relative;
+}
+
+.comboboxList {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 10;
+    width: 100%;
+    max-height: 260px;
+    overflow-y: auto;
+    margin: 0;
+    padding: 6px;
+    border: 1px solid #dfcfc2;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 14px 36px rgba(47, 42, 37, .16);
+    list-style: none;
+}
+
+.comboboxList li {
+    display: grid;
+    gap: 3px;
+    padding: 9px 10px;
+    border-radius: 9px;
+    cursor: pointer;
+}
+
+.comboboxList li span {
+    color: #7d7268;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.comboboxOptionActive {
+    background: #fff0e8;
+}
+
+.comboboxList .comboboxEmpty {
+    color: #7d7268;
+    cursor: default;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.existingCategoryNotice {
+    margin: -4px 0 0;
+    padding: 10px 12px;
+    border-radius: 12px;
+    color: #405f39;
+    background: #edf6ea;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
 .fileField {
     padding: 14px 14px 25px;
     border: 1px dashed #e7cdbf;

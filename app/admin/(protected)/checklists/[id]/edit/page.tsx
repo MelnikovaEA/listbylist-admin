@@ -6,6 +6,7 @@ import {
 } from '@/src/features/checklists/queries/checklistPreview';
 import { prisma } from '@/src/lib/prisma';
 import { updateChecklistAction } from './actions';
+import {getCategoryOptions} from '@/src/features/categories/queries/getCategoryOptions';
 
 export const runtime = 'nodejs';
 
@@ -15,7 +16,8 @@ type EditChecklistPageProps = {
 
 export default async function EditChecklistPage({ params }: EditChecklistPageProps) {
     const {id} = await params;
-    const checklist = await prisma.checklist.findUnique({
+    const [checklist, categories] = await Promise.all([
+        prisma.checklist.findUnique({
         where: { id },
         include: {
             category: true,
@@ -23,7 +25,9 @@ export default async function EditChecklistPage({ params }: EditChecklistPagePro
             tags: { include: { tag: true } },
             assets: checklistPreviewAssetQuery,
         },
-    });
+        }),
+        getCategoryOptions(),
+    ]);
 
     if (!checklist) {
         notFound();
@@ -35,6 +39,7 @@ export default async function EditChecklistPage({ params }: EditChecklistPagePro
         <main>
             <ChecklistForm
                 action={updateChecklistAction.bind(null, checklist.id)}
+                categories={categories}
                 initialPreviewUrl={previewUrl}
                 initialValues={{
                     title: checklist.title,
