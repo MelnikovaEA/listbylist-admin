@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect, useState, type ChangeEvent} from 'react';
-import {FieldError, FieldTooltip} from './FieldFeedback';
+import {FieldError, FieldTooltip} from './FieldFeedback/FieldFeedback';
 import styles from './ChecklistForm.module.css';
 
 type ChecklistFileFieldsProps = {

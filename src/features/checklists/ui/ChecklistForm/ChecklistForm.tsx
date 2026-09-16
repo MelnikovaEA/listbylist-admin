@@ -13,7 +13,7 @@ import {
 } from '../../form/schema';
 import {ChecklistFileFields} from './ChecklistFileFields';
 import {CategoryFields} from './CategoryFields/CategoryFields';
-import {FieldError, FieldTooltip} from './FieldFeedback';
+import {FieldError, FieldTooltip} from './FieldFeedback/FieldFeedback';
 import {FormFeedback} from './FormFeedback/FormFeedback';
 import styles from './ChecklistForm.module.css';
 

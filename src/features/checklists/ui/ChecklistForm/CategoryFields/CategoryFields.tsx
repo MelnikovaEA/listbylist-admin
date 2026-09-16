@@ -6,7 +6,7 @@ import type {
 } from '../../../form/schema';
 import {findCategoryOption} from '../../../model/categoryCombobox';
 import {CategoryCombobox} from '../CategoryCombobox/CategoryCombobox';
-import {FieldError} from '../FieldFeedback';
+import {FieldError} from '../FieldFeedback/FieldFeedback';
 import styles from './CategoryFields.module.css';
 
 type CategoryFormOperations = Pick<

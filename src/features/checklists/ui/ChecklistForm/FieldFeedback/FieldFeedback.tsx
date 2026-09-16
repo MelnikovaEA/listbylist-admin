@@ -1,4 +1,4 @@
-import styles from './ChecklistForm.module.css';
+import styles from './FieldFeedback.module.css';
 
 export function FieldTooltip({text}: { text: string }) {
     return <span className={styles.tooltipWrap}>
