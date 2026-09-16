@@ -15,6 +15,7 @@ import {
     cleanupPreviousChecklistBundle,
     rollbackUploadedChecklistBundle,
 } from './checklistAssetLifecycle';
+import {resolveChecklistCategory} from '@/src/features/categories/services/resolveChecklistCategory';
 
 function getAssetMetadata(file: {
     width: number | null;
@@ -135,19 +136,10 @@ export async function saveChecklist(
 
     try {
         await prisma.$transaction(async (tx) => {
-            const category = await tx.category.upsert({
-                where: {
-                    slug: categorySlug,
-                },
-                update: {
-                    title: categoryTitle,
-                    description: categoryDescription,
-                },
-                create: {
-                    slug: categorySlug,
-                    title: categoryTitle,
-                    description: categoryDescription,
-                },
+            const category = await resolveChecklistCategory(tx, {
+                slug: categorySlug,
+                title: categoryTitle,
+                description: categoryDescription,
             });
 
             const checklistData = {
@@ -267,9 +259,7 @@ export async function saveChecklist(
                     where: {
                         slug: tagSlug,
                     },
-                    update: {
-                        title: tagTitle,
-                    },
+                    update: {},
                     create: {
                         slug: tagSlug,
                         title: tagTitle,
