@@ -2,7 +2,7 @@
 
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useState, type SubmitEvent} from 'react';
-import {useForm, useWatch} from 'react-hook-form';
+import {useForm} from 'react-hook-form';
 import {createChecklistAction} from '@/app/admin/(protected)/checklists/new/actions';
 import type {CategoryOption} from '@/src/features/categories/model/categoryOption';
 import type {ChecklistFormActionResult} from '../../form/action';
@@ -12,8 +12,7 @@ import {
     type ChecklistFormValues,
 } from '../../form/schema';
 import {ChecklistFileFields} from './ChecklistFileFields';
-import {findCategoryOption} from '../../model/categoryCombobox';
-import {CategoryCombobox} from './CategoryCombobox';
+import {CategoryFields} from './CategoryFields/CategoryFields';
 import {FieldError, FieldTooltip} from './FieldFeedback';
 import styles from './ChecklistForm.module.css';
 
@@ -47,9 +46,6 @@ export function ChecklistForm({
             defaultValues: initialValues ?? emptyValues,
             mode: 'onBlur',
         });
-    const categorySlug = useWatch({control, name: 'categorySlug'}) ?? '';
-    const selectedCategory = findCategoryOption(categories, categorySlug);
-    const categorySlugRegistration = register('categorySlug');
 
     const getFieldError = (field: keyof ChecklistFormInput | 'image' | 'pdf') => {
         const clientError = field === 'image' || field === 'pdf' ? undefined : errors[field]?.message;
@@ -62,25 +58,6 @@ export function ChecklistForm({
     const handleFormChange = () => {
         setActionResult(null);
         setUnexpectedError('');
-    };
-
-    const handleCategoryInputChange = (nextSlug: string) => {
-        const nextCategory = findCategoryOption(categories, nextSlug);
-
-        if (nextCategory) {
-            setValue('categoryTitle', nextCategory.title, {shouldDirty: true, shouldValidate: true});
-            setValue('categoryDescription', nextCategory.description, {shouldDirty: true});
-        } else if (selectedCategory) {
-            setValue('categoryTitle', '', {shouldDirty: true, shouldValidate: true});
-            setValue('categoryDescription', '', {shouldDirty: true});
-        }
-    };
-
-    const selectCategory = (category: CategoryOption) => {
-        setValue('categorySlug', category.slug, {shouldDirty: true, shouldValidate: true});
-        setValue('categoryTitle', category.title, {shouldDirty: true, shouldValidate: true});
-        setValue('categoryDescription', category.description, {shouldDirty: true});
-        clearErrors(['categorySlug', 'categoryTitle', 'categoryDescription']);
     };
 
     const submitForm = (event: SubmitEvent<HTMLFormElement>) => {
@@ -162,29 +139,16 @@ export function ChecklistForm({
                         <input {...register('slug')} readOnly={isEditing} aria-invalid={Boolean(getFieldError('slug'))} placeholder="letniy-piknik" />
                         <FieldError message={getFieldError('slug')} />
                     </label>
-                    <label className={styles.field}><span>Категория: slug *</span>
-                        <CategoryCombobox
-                            categories={categories}
-                            error={getFieldError('categorySlug')}
-                            registration={categorySlugRegistration}
-                            value={categorySlug}
-                            onInputChange={handleCategoryInputChange}
-                            onSelect={selectCategory}
-                        />
-                        <FieldError message={getFieldError('categorySlug')} />
-                    </label>
-                    <label className={styles.field}><span>Категория: название *</span>
-                        <input {...register('categoryTitle')} readOnly={Boolean(selectedCategory)} aria-invalid={Boolean(getFieldError('categoryTitle'))} placeholder="Сезонные" />
-                        <FieldError message={getFieldError('categoryTitle')} />
-                    </label>
                 </div>
-                <label className={styles.field}><span>Описание категории</span>
-                    <input {...register('categoryDescription')} readOnly={Boolean(selectedCategory)} aria-invalid={Boolean(getFieldError('categoryDescription'))} placeholder="Летние, зимние, праздничные и тематические чек-листы." />
-                    <FieldError message={getFieldError('categoryDescription')} />
-                </label>
-                {selectedCategory && <p className={styles.existingCategoryNotice} role="status">
-                    Используется существующая категория «{selectedCategory.title}». Изменить её название и описание можно в разделе «Категории».
-                </p>}
+                <CategoryFields
+                    categories={categories}
+                    errors={{
+                        slug: getFieldError('categorySlug'),
+                        title: getFieldError('categoryTitle'),
+                        description: getFieldError('categoryDescription'),
+                    }}
+                    form={{clearErrors, control, register, setValue}}
+                />
                 <label className={styles.field}><span>Статус</span>
                     <select {...register('status')} aria-invalid={Boolean(getFieldError('status'))}>
                         <option value="DRAFT">DRAFT</option><option value="PUBLISHED">PUBLISHED</option><option value="ARCHIVED">ARCHIVED</option>

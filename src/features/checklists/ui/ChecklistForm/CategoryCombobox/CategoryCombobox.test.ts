@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import type {CategoryOption} from '@/src/features/categories/model/categoryOption';
-import {filterCategoryOptions, findCategoryOption} from '../../model/categoryCombobox';
+import {filterCategoryOptions, findCategoryOption} from '../../../model/categoryCombobox';
 
 const categories: CategoryOption[] = [
     {id: '1', slug: 'home', title: 'Дом', description: 'Для дома'},

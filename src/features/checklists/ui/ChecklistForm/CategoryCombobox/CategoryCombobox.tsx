@@ -1,15 +1,14 @@
-'use client';
-
 import {useId, useMemo, useState, type ChangeEvent, type KeyboardEvent} from 'react';
 import type {UseFormRegisterReturn} from 'react-hook-form';
 import type {CategoryOption} from '@/src/features/categories/model/categoryOption';
-import {normalizeSlug} from '../../model/slug';
-import {filterCategoryOptions} from '../../model/categoryCombobox';
-import styles from './ChecklistForm.module.css';
+import {normalizeSlug} from '../../../model/slug';
+import {filterCategoryOptions} from '../../../model/categoryCombobox';
+import styles from './CategoryCombobox.module.css';
 
 type CategoryComboboxProps = {
     categories: ReadonlyArray<CategoryOption>;
     error?: string;
+    inputId: string;
     registration: UseFormRegisterReturn<'categorySlug'>;
     value: string;
     onInputChange: (value: string) => void;
@@ -19,6 +18,7 @@ type CategoryComboboxProps = {
 export function CategoryCombobox({
     categories,
     error,
+    inputId,
     registration,
     value,
     onInputChange,
@@ -84,6 +84,7 @@ export function CategoryCombobox({
     >
         <input
             {...registration}
+            id={inputId}
             role="combobox"
             aria-autocomplete="list"
             aria-controls={listboxId}
