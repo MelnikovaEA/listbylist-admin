@@ -14,6 +14,7 @@ import {
 import {ChecklistFileFields} from './ChecklistFileFields';
 import {CategoryFields} from './CategoryFields/CategoryFields';
 import {FieldError, FieldTooltip} from './FieldFeedback';
+import {FormFeedback} from './FormFeedback/FormFeedback';
 import styles from './ChecklistForm.module.css';
 
 type ChecklistFormProps = {
@@ -101,7 +102,6 @@ export function ChecklistForm({
         })(event);
     };
 
-    const formErrors = actionResult && !actionResult.success ? actionResult.formErrors : [];
     return <div className={styles.page}>
         <header className={styles.header}>
             <p className={styles.eyebrow}>Локальная админка</p>
@@ -109,23 +109,12 @@ export function ChecklistForm({
             <p className={styles.description}>Заполни форму и загрузи исходный checklist.png и checklist.pdf. WebP-версии для карточек и просмотра создадутся автоматически.</p>
         </header>
 
-        {actionResult?.success && <div className={styles.resultNotice}>
-            <button
-                className={styles.resultNoticeClose}
-                type="button"
-                onClick={() => setActionResult(null)}
-                aria-label="Закрыть уведомление"
-            >×</button>
-            <div className={styles.success} role="status">
-                Чек-лист «{actionResult.title}» {isEditing ? 'обновлён' : 'сохранён'}.
-            </div>
-            {actionResult.warnings.length > 0 && <div className={styles.warning} role="alert">
-                {actionResult.warnings.join(' ')}
-            </div>}
-        </div>}
-        {(unexpectedError || formErrors.length > 0) && <div className={styles.error} role="alert">
-            {unexpectedError || formErrors.join(' ')}
-        </div>}
+        <FormFeedback
+            actionResult={actionResult}
+            isEditing={isEditing}
+            onClose={() => setActionResult(null)}
+            unexpectedError={unexpectedError}
+        />
 
         <form className={styles.form} onChange={handleFormChange} onSubmit={submitForm} noValidate>
             <section className={styles.section}>
