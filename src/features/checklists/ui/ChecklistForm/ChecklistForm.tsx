@@ -11,7 +11,7 @@ import {
     type ChecklistFormInput,
     type ChecklistFormValues,
 } from '../../form/schema';
-import {ChecklistFileFields} from './ChecklistFileFields';
+import {FileFields} from './FileFields/FileFields';
 import {CategoryFields} from './CategoryFields/CategoryFields';
 import {FieldError, FieldTooltip} from './FieldFeedback/FieldFeedback';
 import {FormFeedback} from './FormFeedback/FormFeedback';
@@ -181,7 +181,7 @@ export function ChecklistForm({
                 </label>
             </section>
 
-            <ChecklistFileFields
+            <FileFields
                 key={fileFieldsVersion}
                 imageError={getFieldError('image')}
                 initialPreviewUrl={initialPreviewUrl}

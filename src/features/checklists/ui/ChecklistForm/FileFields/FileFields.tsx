@@ -1,10 +1,10 @@
 'use client';
 
 import {useEffect, useState, type ChangeEvent} from 'react';
-import {FieldError, FieldTooltip} from './FieldFeedback/FieldFeedback';
-import styles from './ChecklistForm.module.css';
+import {FieldError, FieldTooltip} from '../FieldFeedback/FieldFeedback';
+import styles from './FileFields.module.css';
 
-type ChecklistFileFieldsProps = {
+type FileFieldsProps = {
     imageError?: string;
     initialPreviewUrl?: string | null;
     isEditing: boolean;
@@ -12,13 +12,13 @@ type ChecklistFileFieldsProps = {
     pdfError?: string;
 };
 
-export function ChecklistFileFields({
+export function FileFields({
     imageError,
     initialPreviewUrl = null,
     isEditing,
     onSelectionChange,
     pdfError,
-}: ChecklistFileFieldsProps) {
+}: FileFieldsProps) {
     const [selectedPreviewUrl, setSelectedPreviewUrl] = useState<string | null>(null);
     const [selectedPdfPreviewUrl, setSelectedPdfPreviewUrl] = useState<string | null>(null);
 
