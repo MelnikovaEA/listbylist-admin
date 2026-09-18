@@ -3,6 +3,7 @@
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useState, type SubmitEvent} from 'react';
 import {useForm} from 'react-hook-form';
+import {FieldError} from '@/src/components/FieldFeedback/FieldFeedback';
 import {FormErrorFeedback, FormSuccessFeedback} from '@/src/components/FormFeedback/FormFeedback';
 import type {CategoryFormActionResult} from '../../form/action';
 import {
@@ -84,11 +85,11 @@ export function CategoryForm({action, initialValues, slug}: CategoryFormProps) {
             </label>
             <label className={styles.field}><span>Название *</span>
                 <input {...register('title')} aria-invalid={Boolean(errors.title)} />
-                {errors.title?.message && <small className={styles.fieldError}>{errors.title.message}</small>}
+                <FieldError message={errors.title?.message} />
             </label>
             <label className={styles.field}><span>Описание *</span>
                 <textarea {...register('description')} aria-invalid={Boolean(errors.description)} />
-                {errors.description?.message && <small className={styles.fieldError}>{errors.description.message}</small>}
+                <FieldError message={errors.description?.message} />
             </label>
             <button type="submit" disabled={!isDirty || isSubmitting} aria-busy={isSubmitting}>
                 {isSubmitting ? 'Сохраняю…' : 'Сохранить изменения'}

@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect, useState, type ChangeEvent} from 'react';
-import {FieldError, FieldTooltip} from '../FieldFeedback/FieldFeedback';
+import {FieldError, FieldTooltip} from '@/src/components/FieldFeedback/FieldFeedback';
 import styles from './FileFields.module.css';
 
 type FileFieldsProps = {

@@ -4,6 +4,7 @@ import {zodResolver} from '@hookform/resolvers/zod';
 import {useState, type SubmitEvent} from 'react';
 import {useForm} from 'react-hook-form';
 import {createChecklistAction} from '@/app/admin/(protected)/checklists/new/actions';
+import {FieldError, FieldTooltip} from '@/src/components/FieldFeedback/FieldFeedback';
 import {FormErrorFeedback, FormSuccessFeedback} from '@/src/components/FormFeedback/FormFeedback';
 import type {CategoryOption} from '@/src/features/categories/model/categoryOption';
 import type {ChecklistFormActionResult} from '../../form/action';
@@ -14,7 +15,6 @@ import {
 } from '../../form/schema';
 import {FileFields} from './FileFields/FileFields';
 import {CategoryFields} from './CategoryFields/CategoryFields';
-import {FieldError, FieldTooltip} from './FieldFeedback/FieldFeedback';
 import styles from './ChecklistForm.module.css';
 
 type ChecklistFormProps = {
