@@ -4,23 +4,20 @@ import {
     type CategoryFormInput,
     type CategoryFormValues,
 } from './schema';
+import {
+    collectFormValidationErrors,
+    getFormString,
+    type FormFieldErrors,
+    type FormValidationResult,
+} from '@/src/lib/forms/validation';
 
-export type CategoryFormFieldErrors = Partial<Record<CategoryFormField, string[]>>;
+export type CategoryFormFieldErrors = FormFieldErrors<CategoryFormField>;
 
-export type CategoryFormValidationResult =
-    | {success: true; data: CategoryFormValues}
-    | {
-        success: false;
-        fieldErrors: CategoryFormFieldErrors;
-        formErrors: string[];
-        values: CategoryFormInput;
-    };
-
-function getFormString(formData: FormData, key: CategoryFormField): string {
-    const value = formData.get(key);
-
-    return typeof value === 'string' ? value : '';
-}
+export type CategoryFormValidationResult = FormValidationResult<
+    CategoryFormInput,
+    CategoryFormValues,
+    CategoryFormField
+>;
 
 export function getCategoryFormInput(formData: FormData): CategoryFormInput {
     return {
@@ -37,18 +34,10 @@ export function validateCategoryForm(formData: FormData): CategoryFormValidation
         return {success: true, data: result.data};
     }
 
-    const fieldErrors: CategoryFormFieldErrors = {};
-    const formErrors: string[] = [];
-
-    for (const issue of result.error.issues) {
-        const field = issue.path[0];
-
-        if (field === 'title' || field === 'description') {
-            fieldErrors[field] = [...(fieldErrors[field] ?? []), issue.message];
-        } else {
-            formErrors.push(issue.message);
-        }
-    }
+    const {fieldErrors, formErrors} = collectFormValidationErrors(
+        result.error.issues,
+        values,
+    );
 
     return {success: false, fieldErrors, formErrors, values};
 }

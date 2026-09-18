@@ -1,7 +1,6 @@
 import {z} from 'zod';
+import {requiredString} from '@/src/lib/forms/schema';
 import {normalizeSlug, validateLatinSlug} from '../model/slug';
-
-const requiredString = (message: string) => z.string().trim().min(1, message);
 
 const latinSlug = (message: string) => z
     .string()

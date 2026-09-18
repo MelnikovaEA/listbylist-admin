@@ -1,6 +1,5 @@
 import {z} from 'zod';
-
-const requiredString = (message: string) => z.string().trim().min(1, message);
+import {requiredString} from '@/src/lib/forms/schema';
 
 export const categoryFormSchema = z.object({
     title: requiredString('Заполни название категории.'),
