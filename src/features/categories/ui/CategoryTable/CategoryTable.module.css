@@ -1,0 +1,13 @@
+.page { width: min(100% - 32px, 1180px); margin-inline: auto; padding-block: 36px 64px; }
+.header p { margin: 0 0 7px; color: #9a705e; font-size: 12px; font-weight: 750; letter-spacing: .07em; text-transform: uppercase; }
+.header h1 { margin: 0; color: #342d28; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; }
+.header span { display: block; margin-top: 10px; color: #786d65; }
+.tableWrap { overflow-x: auto; margin-top: 28px; border: 1px solid #eadfd5; border-radius: 20px; background: #fff; box-shadow: 0 12px 38px rgba(72, 52, 38, .06); }
+.table { width: 100%; min-width: 920px; border-collapse: separate; border-spacing: 0; }
+.table th { padding: 14px 16px; color: #786d65; background: #fff8f2; font-size: 12px; letter-spacing: .04em; text-align: left; text-transform: uppercase; white-space: nowrap; }
+.table td { padding: 16px; border-top: 1px solid #f0e7df; color: #544a43; vertical-align: top; }
+.slug { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; }
+.description { min-width: 280px; line-height: 1.45; }
+.date { min-width: 150px; white-space: nowrap; }
+.editLink { color: #a95142; font-weight: 700; text-underline-offset: 3px; }
+.empty { margin-top: 28px; padding: 36px; border: 1px dashed #ddcbbf; border-radius: 20px; color: #786d65; text-align: center; }

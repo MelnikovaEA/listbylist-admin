@@ -19,6 +19,7 @@ export default function ProtectedAdminLayout({ children }: { children: ReactNode
           <Link href="/admin">Обзор</Link>
           <Link href="/admin/checklists">Чек-листы</Link>
           <Link href="/admin/checklists/new">Новый чек-лист</Link>
+          <Link href="/admin/categories">Категории</Link>
           <Link href="/admin/settings">Настройки</Link>
         </nav>
 

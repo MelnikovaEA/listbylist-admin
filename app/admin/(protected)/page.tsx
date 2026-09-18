@@ -15,6 +15,10 @@ export default function AdminDashboardPage() {
           <strong>Чек-листы</strong>
           <span>Просмотр, редактирование и удаление чек-листов.</span>
         </Link>
+        <Link href="/admin/categories">
+          <strong>Категории</strong>
+          <span>Просмотр и редактирование категорий чек-листов.</span>
+        </Link>
         <Link href="/admin/settings">
           <strong>Настройки</strong>
           <span>Реклама и другие параметры сайта.</span>
