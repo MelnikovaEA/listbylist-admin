@@ -68,51 +68,6 @@
     }
 }
 
-.field {
-    display: grid;
-    gap: 8px;
-    color: #2f2a25;
-    font-size: 14px;
-    font-weight: 700;
-}
-
-.labelText {
-    display: inline-flex;
-    gap: 6px;
-    align-items: center;
-    width: fit-content;
-}
-
-.field input,
-.field textarea,
-.field select {
-    width: 100%;
-    border: 1px solid #efe2d5;
-    border-radius: 14px;
-    padding: 12px 14px;
-    background: #fffdf9;
-    color: #2f2a25;
-    font: inherit;
-}
-
-.field input:read-only {
-    color: #7d7268;
-    background: #f3eee9;
-    cursor: not-allowed;
-}
-
-.field textarea {
-    min-height: 130px;
-    resize: vertical;
-}
-
-.field input[aria-invalid="true"],
-.field textarea[aria-invalid="true"],
-.field select[aria-invalid="true"] {
-    border-color: #c85b4a;
-    background: #fff7f5;
-}
-
 .footer {
     display: flex;
     flex-direction: column;
@@ -128,31 +83,6 @@
         align-items: center;
         justify-content: space-between;
     }
-}
-
-.submitButton {
-    min-height: 48px;
-    border: 0;
-    border-radius: 999px;
-    padding: 0 24px;
-    background: #e98978;
-    color: #ffffff;
-    font: inherit;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.submitButton:hover {
-    background: #c86f5f;
-}
-
-.submitButton:disabled {
-    cursor: not-allowed;
-    opacity: 0.65;
-}
-
-.submitButton[aria-busy="true"] {
-    cursor: wait;
 }
 
 .footerHint {

@@ -7,6 +7,7 @@ import type {
 import {findCategoryOption} from '../../../model/categoryCombobox';
 import {CategoryCombobox} from '../CategoryCombobox/CategoryCombobox';
 import {FieldError} from '@/src/components/FieldFeedback/FieldFeedback';
+import {FormField} from '@/src/components/FormField/FormField';
 import styles from './CategoryFields.module.css';
 
 type CategoryFormOperations = Pick<
@@ -67,25 +68,23 @@ export function CategoryFields({
                 />
                 <FieldError message={errors.slug} />
             </div>
-            <label className={styles.field}><span>Категория: название *</span>
+            <FormField label="Категория: название *" error={errors.title}>
                 <input
                     {...register('categoryTitle')}
                     readOnly={Boolean(selectedCategory)}
                     aria-invalid={Boolean(errors.title)}
                     placeholder="Сезонные"
                 />
-                <FieldError message={errors.title} />
-            </label>
+            </FormField>
         </div>
-        <label className={styles.field}><span>Описание категории</span>
+        <FormField label="Описание категории" error={errors.description}>
             <input
                 {...register('categoryDescription')}
                 readOnly={Boolean(selectedCategory)}
                 aria-invalid={Boolean(errors.description)}
                 placeholder="Летние, зимние, праздничные и тематические чек-листы."
             />
-            <FieldError message={errors.description} />
-        </label>
+        </FormField>
         {selectedCategory && <p className={styles.existingCategoryNotice} role="status">
             Используется существующая категория «{selectedCategory.title}». Изменить её название и описание можно в разделе «Категории».
         </p>}

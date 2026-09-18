@@ -3,8 +3,9 @@
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useState, type SubmitEvent} from 'react';
 import {useForm} from 'react-hook-form';
-import {FieldError} from '@/src/components/FieldFeedback/FieldFeedback';
+import {FormField} from '@/src/components/FormField/FormField';
 import {FormErrorFeedback, FormSuccessFeedback} from '@/src/components/FormFeedback/FormFeedback';
+import {SubmitButton} from '@/src/components/SubmitButton/SubmitButton';
 import type {CategoryFormActionResult} from '../../form/action';
 import {
     categoryFormSchema,
@@ -79,21 +80,22 @@ export function CategoryForm({action, initialValues, slug}: CategoryFormProps) {
         <FormErrorFeedback message={unexpectedError || formErrors.join(' ')} />
 
         <form className={styles.form} onSubmit={submitForm} noValidate>
-            <label className={styles.field}><span>Slug</span>
+            <FormField
+                label="Slug"
+                hint="Slug категории нельзя изменить."
+                hintId="category-slug-hint"
+            >
                 <input value={slug} readOnly aria-describedby="category-slug-hint" />
-                <small id="category-slug-hint">Slug категории нельзя изменить.</small>
-            </label>
-            <label className={styles.field}><span>Название *</span>
+            </FormField>
+            <FormField label="Название *" error={errors.title?.message}>
                 <input {...register('title')} aria-invalid={Boolean(errors.title)} />
-                <FieldError message={errors.title?.message} />
-            </label>
-            <label className={styles.field}><span>Описание *</span>
+            </FormField>
+            <FormField label="Описание *" error={errors.description?.message}>
                 <textarea {...register('description')} aria-invalid={Boolean(errors.description)} />
-                <FieldError message={errors.description?.message} />
-            </label>
-            <button type="submit" disabled={!isDirty || isSubmitting} aria-busy={isSubmitting}>
+            </FormField>
+            <SubmitButton disabled={!isDirty || isSubmitting} aria-busy={isSubmitting}>
                 {isSubmitting ? 'Сохраняю…' : 'Сохранить изменения'}
-            </button>
+            </SubmitButton>
         </form>
     </main>;
 }

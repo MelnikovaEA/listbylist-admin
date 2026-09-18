@@ -4,8 +4,10 @@ import {zodResolver} from '@hookform/resolvers/zod';
 import {useState, type SubmitEvent} from 'react';
 import {useForm} from 'react-hook-form';
 import {createChecklistAction} from '@/app/admin/(protected)/checklists/new/actions';
-import {FieldError, FieldTooltip} from '@/src/components/FieldFeedback/FieldFeedback';
+import {FieldTooltip} from '@/src/components/FieldFeedback/FieldFeedback';
+import {FormField} from '@/src/components/FormField/FormField';
 import {FormErrorFeedback, FormSuccessFeedback} from '@/src/components/FormFeedback/FormFeedback';
+import {SubmitButton} from '@/src/components/SubmitButton/SubmitButton';
 import type {CategoryOption} from '@/src/features/categories/model/categoryOption';
 import type {ChecklistFormActionResult} from '../../form/action';
 import {
@@ -122,14 +124,15 @@ export function ChecklistForm({
             <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>Основное</h2>
                 <div className={styles.gridTwo}>
-                    <label className={styles.field}><span>Название чек-листа *</span>
+                    <FormField label="Название чек-листа *" error={getFieldError('title')}>
                         <input {...register('title')} aria-invalid={Boolean(getFieldError('title'))} placeholder="Чек-лист для летнего пикника" />
-                        <FieldError message={getFieldError('title')} />
-                    </label>
-                    <label className={styles.field}><span className={styles.labelText}>Slug * <FieldTooltip text="Латиница, цифры и дефисы." /></span>
+                    </FormField>
+                    <FormField
+                        label={<>Slug * <FieldTooltip text="Латиница, цифры и дефисы." /></>}
+                        error={getFieldError('slug')}
+                    >
                         <input {...register('slug')} readOnly={isEditing} aria-invalid={Boolean(getFieldError('slug'))} placeholder="letniy-piknik" />
-                        <FieldError message={getFieldError('slug')} />
-                    </label>
+                    </FormField>
                 </div>
                 <CategoryFields
                     categories={categories}
@@ -140,47 +143,41 @@ export function ChecklistForm({
                     }}
                     form={{clearErrors, control, register, setValue}}
                 />
-                <label className={styles.field}><span>Статус</span>
+                <FormField label="Статус" error={getFieldError('status')}>
                     <select {...register('status')} aria-invalid={Boolean(getFieldError('status'))}>
                         <option value="DRAFT">DRAFT</option><option value="PUBLISHED">PUBLISHED</option><option value="ARCHIVED">ARCHIVED</option>
                     </select>
-                    <FieldError message={getFieldError('status')} />
-                </label>
+                </FormField>
             </section>
 
             <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>Тексты страницы</h2>
-                <label className={styles.field}><span>Подзаголовок</span>
+                <FormField label="Подзаголовок">
                     <input {...register('subtitle')} placeholder="Что взять с собой на природу" />
-                </label>
-                <label className={styles.field}><span>Intro *</span>
+                </FormField>
+                <FormField label="Intro *" error={getFieldError('intro')}>
                     <textarea {...register('intro')} aria-invalid={Boolean(getFieldError('intro'))} placeholder="Короткое вступление для карточки и начала страницы." />
-                    <FieldError message={getFieldError('intro')} />
-                </label>
-                <label className={styles.field}><span>Описание *</span>
+                </FormField>
+                <FormField label="Описание *" error={getFieldError('description')}>
                     <textarea {...register('description')} aria-invalid={Boolean(getFieldError('description'))} placeholder="Более подробное описание чек-листа." />
-                    <FieldError message={getFieldError('description')} />
-                </label>
+                </FormField>
             </section>
 
             <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>SEO</h2>
-                <label className={styles.field}><span>SEO title *</span>
+                <FormField label="SEO title *" error={getFieldError('seoTitle')}>
                     <input {...register('seoTitle')} aria-invalid={Boolean(getFieldError('seoTitle'))} placeholder="Чек-лист для летнего пикника — скачать бесплатно" />
-                    <FieldError message={getFieldError('seoTitle')} />
-                </label>
-                <label className={styles.field}><span>SEO description *</span>
+                </FormField>
+                <FormField label="SEO description *" error={getFieldError('seoDescription')}>
                     <textarea {...register('seoDescription')} aria-invalid={Boolean(getFieldError('seoDescription'))} placeholder="Скачайте бесплатный чек-лист для летнего пикника в PNG или PDF." />
-                    <FieldError message={getFieldError('seoDescription')} />
-                </label>
+                </FormField>
             </section>
 
             <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>Пункты чек-листа</h2>
-                <label className={styles.field}><span>Каждый пункт с новой строки *</span>
+                <FormField label="Каждый пункт с новой строки *" error={getFieldError('items')}>
                     <textarea {...register('items')} aria-invalid={Boolean(getFieldError('items'))} placeholder={`Плед\nВода\nСалфетки\nСредство от насекомых`} />
-                    <FieldError message={getFieldError('items')} />
-                </label>
+                </FormField>
             </section>
 
             <FileFields
@@ -194,20 +191,18 @@ export function ChecklistForm({
 
             <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>Теги</h2>
-                <label className={styles.field}><span>Через запятую</span>
+                <FormField label="Через запятую">
                     <input {...register('tags')} placeholder="лето, пикник, список вещей, сезонные" />
-                </label>
+                </FormField>
             </section>
 
             <div className={styles.footer}>
-                <button
-                    className={styles.submitButton}
-                    type="submit"
+                <SubmitButton
                     disabled={isSubmitting || (isEditing && !isDirty && !hasSelectedFiles)}
                     aria-busy={isSubmitting}
                 >
                     {isSubmitting ? 'Сохраняю…' : isEditing ? 'Сохранить изменения' : 'Сохранить чек-лист'}
-                </button>
+                </SubmitButton>
                 <p className={styles.footerHint}>После сохранения проверь страницу чек-листа и сделай build.</p>
             </div>
         </form>

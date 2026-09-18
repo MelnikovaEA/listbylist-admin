@@ -16,27 +16,6 @@
     font-weight: 700;
 }
 
-.field input {
-    width: 100%;
-    border: 1px solid #efe2d5;
-    border-radius: 14px;
-    padding: 12px 14px;
-    background: #fffdf9;
-    color: #2f2a25;
-    font: inherit;
-}
-
-.field input:read-only {
-    color: #7d7268;
-    background: #f3eee9;
-    cursor: not-allowed;
-}
-
-.field input[aria-invalid="true"] {
-    border-color: #c85b4a;
-    background: #fff7f5;
-}
-
 .existingCategoryNotice {
     margin: -4px 0 0;
     padding: 10px 12px;
