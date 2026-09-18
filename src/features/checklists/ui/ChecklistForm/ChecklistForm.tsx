@@ -4,6 +4,7 @@ import {zodResolver} from '@hookform/resolvers/zod';
 import {useState, type SubmitEvent} from 'react';
 import {useForm} from 'react-hook-form';
 import {createChecklistAction} from '@/app/admin/(protected)/checklists/new/actions';
+import {FormErrorFeedback, FormSuccessFeedback} from '@/src/components/FormFeedback/FormFeedback';
 import type {CategoryOption} from '@/src/features/categories/model/categoryOption';
 import type {ChecklistFormActionResult} from '../../form/action';
 import {
@@ -14,7 +15,6 @@ import {
 import {FileFields} from './FileFields/FileFields';
 import {CategoryFields} from './CategoryFields/CategoryFields';
 import {FieldError, FieldTooltip} from './FieldFeedback/FieldFeedback';
-import {FormFeedback} from './FormFeedback/FormFeedback';
 import styles from './ChecklistForm.module.css';
 
 type ChecklistFormProps = {
@@ -109,12 +109,14 @@ export function ChecklistForm({
             <p className={styles.description}>Заполни форму и загрузи исходный checklist.png и checklist.pdf. WebP-версии для карточек и просмотра создадутся автоматически.</p>
         </header>
 
-        <FormFeedback
-            actionResult={actionResult}
-            isEditing={isEditing}
-            onClose={() => setActionResult(null)}
-            unexpectedError={unexpectedError}
-        />
+        {actionResult?.success && <FormSuccessFeedback
+            message={<>Чек-лист «{actionResult.title}» {isEditing ? 'обновлён' : 'сохранён'}.</>}
+            onCloseAction={() => setActionResult(null)}
+            warnings={actionResult.warnings}
+        />}
+        <FormErrorFeedback message={unexpectedError || (
+            actionResult && !actionResult.success ? actionResult.formErrors.join(' ') : ''
+        )} />
 
         <form className={styles.form} onChange={handleFormChange} onSubmit={submitForm} noValidate>
             <section className={styles.section}>

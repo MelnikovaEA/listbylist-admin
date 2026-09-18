@@ -3,6 +3,7 @@
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useState, type SubmitEvent} from 'react';
 import {useForm} from 'react-hook-form';
+import {FormErrorFeedback, FormSuccessFeedback} from '@/src/components/FormFeedback/FormFeedback';
 import type {CategoryFormActionResult} from '../../form/action';
 import {
     categoryFormSchema,
@@ -70,12 +71,11 @@ export function CategoryForm({action, initialValues, slug}: CategoryFormProps) {
             <span>Изменения применятся ко всем связанным чек-листам.</span>
         </header>
 
-        {actionResult?.success && <p className={styles.success} role="status">
-            Категория «{actionResult.title}» обновлена.
-        </p>}
-        {(unexpectedError || formErrors.length > 0) && <p className={styles.error} role="alert">
-            {unexpectedError || formErrors.join(' ')}
-        </p>}
+        {actionResult?.success && <FormSuccessFeedback
+            message={<>Категория «{actionResult.title}» обновлена.</>}
+            onCloseAction={() => setActionResult(null)}
+        />}
+        <FormErrorFeedback message={unexpectedError || formErrors.join(' ')} />
 
         <form className={styles.form} onSubmit={submitForm} noValidate>
             <label className={styles.field}><span>Slug</span>
