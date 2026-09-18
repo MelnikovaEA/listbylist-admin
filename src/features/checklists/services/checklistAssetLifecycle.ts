@@ -1,9 +1,7 @@
 import 'server-only';
 
-import type {
-    ChecklistAssetBundle,
-    ChecklistAssetBundleReference,
-} from '../files/bundle';
+import type {ChecklistAssetBundle} from '../files/bundle';
+import type {ChecklistAssetBundleReference} from '../files/contract';
 import {deleteChecklistAssetBundle} from '../files/bundle';
 import type {
     ChecklistFileState,

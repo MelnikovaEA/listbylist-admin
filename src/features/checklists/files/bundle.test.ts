@@ -4,39 +4,9 @@ import sharp from 'sharp';
 import { validatePdf, validatePng } from './validation';
 import {
     deleteChecklistAssetBundle,
-    getChecklistAssetBundleReference,
     prepareChecklistAssetBundle,
     uploadChecklistAssetBundle,
 } from './bundle';
-
-test('getChecklistAssetBundleReference restores all keys from a versioned image key', () => {
-    const bundle = getChecklistAssetBundleReference(
-        'checklists/test-checklist/test-version/checklist.png',
-    );
-
-    assert.deepEqual(
-        bundle?.assets.map((asset) => asset.key),
-        [
-            'checklists/test-checklist/test-version/preview-400.webp',
-            'checklists/test-checklist/test-version/preview-640.webp',
-            'checklists/test-checklist/test-version/preview-960.webp',
-            'checklists/test-checklist/test-version/view.webp',
-            'checklists/test-checklist/test-version/checklist.png',
-            'checklists/test-checklist/test-version/checklist.pdf',
-        ],
-    );
-});
-
-test('getChecklistAssetBundleReference ignores legacy and malformed keys', () => {
-    assert.equal(
-        getChecklistAssetBundleReference('/checklists/test-checklist/checklist.png'),
-        null,
-    );
-    assert.equal(
-        getChecklistAssetBundleReference('checklists/test-checklist/checklist.png'),
-        null,
-    );
-});
 
 async function createTestBundle() {
     const pngBuffer = await sharp({

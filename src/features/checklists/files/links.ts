@@ -1,6 +1,6 @@
 import 'server-only';
 
-import {getChecklistAssetBundleReference} from './bundle';
+import {getChecklistAssetBundleReference} from './contract';
 import {getChecklistAssetPublicUrl} from './url';
 
 export type ChecklistAssetLink = {
@@ -26,12 +26,7 @@ export function getChecklistAssetLinks(
     }
 
     const bundle = getChecklistAssetBundleReference(downloadImageKey);
-    const expectedPrefix = `checklists/${slug}/`;
-
-    if (
-        !bundle ||
-        !bundle.assets.every((asset) => asset.key.startsWith(expectedPrefix))
-    ) {
+    if (!bundle || bundle.slug !== slug) {
         return [];
     }
 

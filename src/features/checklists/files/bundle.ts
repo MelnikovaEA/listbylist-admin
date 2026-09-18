@@ -5,19 +5,16 @@ import sharp from 'sharp';
 import type { ValidatedPdf, ValidatedPng } from './validation';
 import { MAX_PNG_PIXELS } from './validation';
 import {
+    getChecklistAssetKey,
+    type ChecklistAssetBundleReference,
+    type ChecklistAssetRole,
+} from './contract';
+import {
     deleteObject,
     uploadObject,
     type ObjectContentDisposition,
     type UploadObjectInput,
 } from '@/src/lib/storage/objectStorage';
-
-export type ChecklistAssetRole =
-    | 'PREVIEW_400'
-    | 'PREVIEW_640'
-    | 'PREVIEW_960'
-    | 'VIEW'
-    | 'DOWNLOAD_IMAGE'
-    | 'PDF';
 
 export type PreparedChecklistAsset = UploadObjectInput & {
     role: ChecklistAssetRole;
@@ -30,41 +27,6 @@ export type ChecklistAssetBundle = {
     version: string;
     assets: PreparedChecklistAsset[];
 };
-
-export type ChecklistAssetBundleReference = {
-    assets: Array<Pick<PreparedChecklistAsset, 'key'>>;
-};
-
-const assetFileNames = [
-    'preview-400.webp',
-    'preview-640.webp',
-    'preview-960.webp',
-    'view.webp',
-    'checklist.png',
-    'checklist.pdf',
-] as const;
-
-export function getChecklistAssetBundleReference(
-    downloadImageKey: string,
-): ChecklistAssetBundleReference | null {
-    const suffix = '/checklist.png';
-
-    if (!downloadImageKey.startsWith('checklists/') || !downloadImageKey.endsWith(suffix)) {
-        return null;
-    }
-
-    const directory = downloadImageKey.slice(0, -suffix.length);
-
-    if (directory.split('/').length !== 3) {
-        return null;
-    }
-
-    return {
-        assets: assetFileNames.map((fileName) => ({
-            key: `${directory}/${fileName}`,
-        })),
-    };
-}
 
 type PrepareChecklistAssetBundleInput = {
     slug: string;
@@ -139,13 +101,12 @@ export async function prepareChecklistAssetBundle({
     pdf,
     version = createAssetVersion(),
 }: PrepareChecklistAssetBundleInput): Promise<ChecklistAssetBundle> {
-    const directory = `checklists/${slug}/${version}`;
     const previews = await Promise.all(
         previewWidths.map((width) =>
             createWebpAsset(
                 png.buffer,
                 `PREVIEW_${width}`,
-                `${directory}/preview-${width}.webp`,
+                getChecklistAssetKey(slug, version, `preview-${width}.webp`),
                 width,
                 86,
             ),
@@ -154,7 +115,7 @@ export async function prepareChecklistAssetBundle({
     const view = await createWebpAsset(
         png.buffer,
         'VIEW',
-        `${directory}/view.webp`,
+        getChecklistAssetKey(slug, version, 'view.webp'),
         1200,
         88,
     );
@@ -166,7 +127,7 @@ export async function prepareChecklistAssetBundle({
             view,
             createOriginalAsset(
                 'DOWNLOAD_IMAGE',
-                `${directory}/checklist.png`,
+                getChecklistAssetKey(slug, version, 'checklist.png'),
                 png.buffer,
                 png.mimeType,
                 `attachment; filename="${slug}.png"`,
@@ -175,7 +136,7 @@ export async function prepareChecklistAssetBundle({
             ),
             createOriginalAsset(
                 'PDF',
-                `${directory}/checklist.pdf`,
+                getChecklistAssetKey(slug, version, 'checklist.pdf'),
                 pdf.buffer,
                 pdf.mimeType,
                 `attachment; filename="${slug}.pdf"`,

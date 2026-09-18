@@ -7,9 +7,9 @@ import {
 } from './saveChecklistFiles';
 import {
     deleteChecklistAssetBundle,
-    getChecklistAssetBundleReference,
     type ChecklistAssetBundle,
 } from '../files/bundle';
+import {getChecklistAssetBundleReference} from '../files/contract';
 import {
     applyChecklistAssetChanges,
     cleanupPreviousChecklistBundle,

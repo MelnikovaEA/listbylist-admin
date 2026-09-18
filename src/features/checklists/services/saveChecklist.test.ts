@@ -1,9 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import type {
-    ChecklistAssetBundle,
-    ChecklistAssetBundleReference,
-} from '../files/bundle';
+import type {ChecklistAssetBundle} from '../files/bundle';
+import type {ChecklistAssetBundleReference} from '../files/contract';
 import type {
     ChecklistFileState,
     SavedChecklistFiles,
