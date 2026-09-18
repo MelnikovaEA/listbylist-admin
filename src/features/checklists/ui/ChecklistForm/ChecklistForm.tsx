@@ -43,7 +43,7 @@ export function ChecklistForm({
     const [hasSelectedFiles, setHasSelectedFiles] = useState(false);
     const [actionResult, setActionResult] = useState<ChecklistFormActionResult | null>(null);
     const [unexpectedError, setUnexpectedError] = useState('');
-    const {register, handleSubmit, reset, setError, clearErrors, getValues, setValue, control, formState: {errors, isDirty, isSubmitting}} =
+    const {register, handleSubmit, reset, clearErrors, getValues, setValue, control, formState: {errors, isDirty, isSubmitting}} =
         useForm<ChecklistFormInput, unknown, ChecklistFormValues>({
             resolver: zodResolver(checklistFormSchema),
             defaultValues: initialValues ?? emptyValues,
@@ -73,7 +73,6 @@ export function ChecklistForm({
         const formData = new FormData(form);
 
         return handleSubmit(async () => {
-            clearErrors();
             setActionResult(null);
             setUnexpectedError('');
 
@@ -82,10 +81,6 @@ export function ChecklistForm({
                 setActionResult(result);
 
                 if (!result.success) {
-                    for (const [field, messages] of Object.entries(result.fieldErrors)) {
-                        if (field === 'image' || field === 'pdf' || !messages?.[0]) continue;
-                        setError(field as keyof ChecklistFormInput, {type: 'server', message: messages[0]});
-                    }
                     return;
                 }
 

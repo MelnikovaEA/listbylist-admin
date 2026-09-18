@@ -23,12 +23,26 @@ type CategoryFormProps = {
 export function CategoryForm({action, initialValues, slug}: CategoryFormProps) {
     const [actionResult, setActionResult] = useState<CategoryFormActionResult | null>(null);
     const [unexpectedError, setUnexpectedError] = useState('');
-    const {register, handleSubmit, reset, setError, formState: {errors, isDirty, isSubmitting}} =
+    const {register, handleSubmit, reset, formState: {errors, isDirty, isSubmitting}} =
         useForm<CategoryFormInput, unknown, CategoryFormValues>({
             resolver: zodResolver(categoryFormSchema),
             defaultValues: initialValues,
             mode: 'onBlur',
         });
+
+    const getFieldError = (field: keyof CategoryFormInput) => {
+        const clientError = errors[field]?.message;
+        const serverError = actionResult && !actionResult.success
+            ? actionResult.fieldErrors[field]?.[0]
+            : undefined;
+
+        return typeof clientError === 'string' ? clientError : serverError;
+    };
+
+    const handleFormChange = () => {
+        setActionResult(null);
+        setUnexpectedError('');
+    };
 
     const submitForm = (event: SubmitEvent<HTMLFormElement>) => {
         if (!isDirty) {
@@ -47,13 +61,6 @@ export function CategoryForm({action, initialValues, slug}: CategoryFormProps) {
                 setActionResult(result);
 
                 if (!result.success) {
-                    for (const field of ['title', 'description'] as const) {
-                        const message = result.fieldErrors[field]?.[0];
-
-                        if (message) {
-                            setError(field, {type: 'server', message});
-                        }
-                    }
                     return;
                 }
 
@@ -79,7 +86,7 @@ export function CategoryForm({action, initialValues, slug}: CategoryFormProps) {
         />}
         <FormErrorFeedback message={unexpectedError || formErrors.join(' ')} />
 
-        <form className={styles.form} onSubmit={submitForm} noValidate>
+        <form className={styles.form} onChange={handleFormChange} onSubmit={submitForm} noValidate>
             <FormField
                 label="Slug"
                 hint="Slug категории нельзя изменить."
@@ -87,11 +94,11 @@ export function CategoryForm({action, initialValues, slug}: CategoryFormProps) {
             >
                 <input value={slug} readOnly aria-describedby="category-slug-hint" />
             </FormField>
-            <FormField label="Название *" error={errors.title?.message}>
-                <input {...register('title')} aria-invalid={Boolean(errors.title)} />
+            <FormField label="Название *" error={getFieldError('title')}>
+                <input {...register('title')} aria-invalid={Boolean(getFieldError('title'))} />
             </FormField>
-            <FormField label="Описание *" error={errors.description?.message}>
-                <textarea {...register('description')} aria-invalid={Boolean(errors.description)} />
+            <FormField label="Описание *" error={getFieldError('description')}>
+                <textarea {...register('description')} aria-invalid={Boolean(getFieldError('description'))} />
             </FormField>
             <SubmitButton disabled={!isDirty || isSubmitting} aria-busy={isSubmitting}>
                 {isSubmitting ? 'Сохраняю…' : 'Сохранить изменения'}
