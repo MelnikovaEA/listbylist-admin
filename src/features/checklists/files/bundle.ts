@@ -1,6 +1,5 @@
 import 'server-only';
 
-import { randomUUID } from 'node:crypto';
 import sharp from 'sharp';
 import type { ValidatedPdf, ValidatedPng } from './validation';
 import { MAX_PNG_PIXELS } from './validation';
@@ -15,6 +14,7 @@ import {
     type ObjectContentDisposition,
     type UploadObjectInput,
 } from '@/src/lib/storage/objectStorage';
+import {createAssetVersion} from '@/src/lib/storage/objectVersion';
 
 export type PreparedChecklistAsset = UploadObjectInput & {
     role: ChecklistAssetRole;
@@ -41,11 +41,6 @@ type StorageOperations = {
 };
 
 const previewWidths = [400, 640, 960] as const;
-
-export function createAssetVersion(): string {
-    const timestamp = new Date().toISOString().replace(/[-:.TZ]/g, '');
-    return `${timestamp}-${randomUUID().slice(0, 8)}`;
-}
 
 async function createWebpAsset(
     source: Buffer,

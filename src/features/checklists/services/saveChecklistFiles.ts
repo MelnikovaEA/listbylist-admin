@@ -7,11 +7,11 @@ import {
     type PreparedChecklistAsset,
 } from '../files/bundle';
 import {
-    isUploadedFile,
     validatePdf,
     validatePng,
 } from '../files/validation';
 import {ChecklistFormFieldError} from '../form/errors';
+import {isUploadedFile} from '@/src/lib/forms/file';
 
 type ChecklistFileAsset = {
     exists: boolean;

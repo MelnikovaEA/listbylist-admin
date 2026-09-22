@@ -23,10 +23,6 @@ export type ValidatedPdf = {
     mimeType: 'application/pdf';
 };
 
-export function isUploadedFile(value: FormDataEntryValue | null): value is File {
-    return value instanceof File && value.size > 0;
-}
-
 function assertFileExtension(file: File, expectedExtension: string, label: string): void {
     const extension = path.extname(file.name).toLowerCase();
 
