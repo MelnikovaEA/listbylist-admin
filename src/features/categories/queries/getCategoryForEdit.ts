@@ -10,6 +10,7 @@ export function getCategoryForEdit(id: string) {
             slug: true,
             title: true,
             description: true,
+            iconKey: true,
         },
     });
 }
