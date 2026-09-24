@@ -11,7 +11,6 @@ import {
     uploadObject,
     type UploadObjectInput,
 } from '@/src/lib/storage/objectStorage';
-import {createAssetVersion} from '@/src/lib/storage/objectVersion';
 
 export const CATEGORY_ICON_SIZE = 512;
 
@@ -50,7 +49,7 @@ function getContainedDimensions(width: number, height: number): {
 export async function prepareCategoryIcon(
     slug: string,
     source: ValidatedCategoryIcon,
-    version = createAssetVersion(),
+    version: string,
 ): Promise<PreparedCategoryIcon> {
     const contained = getContainedDimensions(source.width, source.height);
     const resized = await sharp(source.buffer, {

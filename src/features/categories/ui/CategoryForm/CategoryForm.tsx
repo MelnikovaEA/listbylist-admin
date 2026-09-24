@@ -96,6 +96,7 @@ export function CategoryForm({action, iconUrl, initialValues, slug}: CategoryFor
         {actionResult?.success && <FormSuccessFeedback
             message={<>Категория «{actionResult.title}» обновлена.</>}
             onCloseAction={() => setActionResult(null)}
+            warnings={actionResult.warnings}
         />}
         <FormErrorFeedback message={unexpectedError || formErrors.join(' ')}/>
 
