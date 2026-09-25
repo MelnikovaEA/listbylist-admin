@@ -1,7 +1,7 @@
 'use client';
 
 import {zodResolver} from '@hookform/resolvers/zod';
-import {useState, type SubmitEvent, useRef} from 'react';
+import {useEffect, useRef, useState, type ChangeEvent, type SubmitEvent} from 'react';
 import {useForm} from 'react-hook-form';
 import {FormField} from '@/src/components/FormField/FormField';
 import {FormErrorFeedback, FormSuccessFeedback} from '@/src/components/FormFeedback/FormFeedback';
@@ -24,7 +24,7 @@ type CategoryFormProps = {
 export function CategoryForm({action, iconUrl, initialValues, slug}: CategoryFormProps) {
     const [actionResult, setActionResult] = useState<CategoryFormActionResult | null>(null);
     const [unexpectedError, setUnexpectedError] = useState('');
-    const [hasSelectedIcon, setHasSelectedIcon] = useState(false);
+    const [selectedIconUrl, setSelectedIconUrl] = useState<string | null>(null);
     const [hasRemoveIcon, setHasRemoveIcon] = useState(false);
     const {register, handleSubmit, reset, formState: {errors, isDirty, isSubmitting}} =
         useForm<CategoryFormInput, unknown, CategoryFormValues>({
@@ -32,9 +32,18 @@ export function CategoryForm({action, iconUrl, initialValues, slug}: CategoryFor
             defaultValues: initialValues,
             mode: 'onBlur',
         });
+    const hasSelectedIcon = Boolean(selectedIconUrl);
     const hasChanges = isDirty || hasSelectedIcon || hasRemoveIcon;
 
     const iconInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() =>{
+        return () => {
+            if (selectedIconUrl) {
+                URL.revokeObjectURL(selectedIconUrl);
+            }
+        }
+    }, [selectedIconUrl]);
 
     const getFieldError = (field: keyof CategoryFormInput) => {
         const clientError = errors[field]?.message;
@@ -48,6 +57,20 @@ export function CategoryForm({action, iconUrl, initialValues, slug}: CategoryFor
     const handleFormChange = () => {
         setActionResult(null);
         setUnexpectedError('');
+    };
+
+    const handleIconChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.currentTarget.files?.[0];
+
+        setSelectedIconUrl(file ? URL.createObjectURL(file) : null);
+    };
+
+    const clearSelectedIcon = () => {
+        if (iconInputRef.current) {
+            iconInputRef.current.value = '';
+        }
+
+        setSelectedIconUrl(null);
     };
 
     const submitForm = (event: SubmitEvent<HTMLFormElement>) => {
@@ -72,7 +95,7 @@ export function CategoryForm({action, iconUrl, initialValues, slug}: CategoryFor
                 }
 
                 reset(values);
-                setHasSelectedIcon(false);
+                setSelectedIconUrl(null);
                 setHasRemoveIcon(false);
 
                 if (iconInputRef.current) {
@@ -116,14 +139,45 @@ export function CategoryForm({action, iconUrl, initialValues, slug}: CategoryFor
             </FormField>
             <section className={styles.iconField} aria-labelledby="category-icon-label">
                 <span className={styles.iconLabel} id="category-icon-label">Иконка</span>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                {iconUrl && <img
-                    className={styles.iconPreview}
-                    src={iconUrl}
-                    alt="Текущая иконка категории"
-                    width={128}
-                    height={128}
-                />}
+                {iconUrl && <div className={styles.previewBlock}>
+                    <span>Текущая иконка</span>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        className={styles.iconPreview}
+                        src={iconUrl}
+                        alt="Текущая иконка категории"
+                        width={128}
+                        height={128}
+                    />
+                    {iconUrl && <label className={styles.removeIcon}>
+                        <input
+                            name="removeIcon"
+                            type="checkbox"
+                            value="true"
+                            checked={hasRemoveIcon}
+                            disabled={hasSelectedIcon}
+                            onChange={(e) => setHasRemoveIcon(e.target.checked)}
+                        />
+                        Удалить иконку
+                    </label>}
+                </div>}
+                {selectedIconUrl && <div className={styles.previewBlock}>
+                        <span>Новая иконка</span>
+                        {/* Blob URLs from local file inputs cannot be optimized by next/image. */}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            className={styles.iconPreview}
+                            src={selectedIconUrl}
+                            alt="Предпросмотр новой иконки категории"
+                            width={128}
+                            height={128}
+                        />
+                        <button
+                            className={styles.clearIcon}
+                            type="button"
+                            onClick={clearSelectedIcon}
+                        >Отменить выбор</button>
+                    </div>}
                 <label className={styles.fileField}>
                     <span className={styles.fileLabel}>icon.png</span>
                     <input
@@ -132,20 +186,9 @@ export function CategoryForm({action, iconUrl, initialValues, slug}: CategoryFor
                         type="file"
                         accept=".png,image/png"
                         disabled={hasRemoveIcon}
-                        onChange={(e) => setHasSelectedIcon(Boolean(e.target.files?.length))}
+                        onChange={handleIconChange}
                     />
                 </label>
-                {iconUrl && <label className={styles.removeIcon}>
-                    <input
-                        name="removeIcon"
-                        type="checkbox"
-                        value="true"
-                        checked={hasRemoveIcon}
-                        disabled={hasSelectedIcon}
-                        onChange={(e) => setHasRemoveIcon(e.target.checked)}
-                    />
-                    Удалить иконку
-                </label>}
             </section>
             <SubmitButton disabled={!hasChanges || isSubmitting} aria-busy={isSubmitting}>
                 {isSubmitting ? 'Сохраняю…' : 'Сохранить изменения'}
