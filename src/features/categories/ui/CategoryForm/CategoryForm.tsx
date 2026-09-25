@@ -1,6 +1,7 @@
 'use client';
 
 import {PageHeader} from '@/src/components/PageHeader/PageHeader';
+import {FormActions, FormLayout} from '@/src/components/FormLayout/FormLayout';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useEffect, useRef, useState, type ChangeEvent, type SubmitEvent} from 'react';
 import {useForm} from 'react-hook-form';
@@ -124,7 +125,7 @@ export function CategoryForm({action, iconUrl, initialValues, slug}: CategoryFor
         />}
         <FormErrorFeedback message={unexpectedError || formErrors.join(' ')}/>
 
-        <form className={styles.form} onChange={handleFormChange} onSubmit={submitForm} noValidate>
+        <FormLayout onChange={handleFormChange} onSubmit={submitForm} noValidate>
             <FormField
                 label="Slug"
                 hint="Slug категории нельзя изменить."
@@ -191,9 +192,11 @@ export function CategoryForm({action, iconUrl, initialValues, slug}: CategoryFor
                     />
                 </label>
             </section>
-            <SubmitButton disabled={!hasChanges || isSubmitting} aria-busy={isSubmitting}>
-                {isSubmitting ? 'Сохраняю…' : 'Сохранить изменения'}
-            </SubmitButton>
-        </form>
+            <FormActions>
+                <SubmitButton disabled={!hasChanges || isSubmitting} aria-busy={isSubmitting}>
+                    {isSubmitting ? 'Сохраняю…' : 'Сохранить изменения'}
+                </SubmitButton>
+            </FormActions>
+        </FormLayout>
     </>;
 }

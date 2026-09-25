@@ -1,6 +1,7 @@
 'use client';
 
 import {PageHeader} from '@/src/components/PageHeader/PageHeader';
+import {FormActions, FormLayout} from '@/src/components/FormLayout/FormLayout';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useState, type SubmitEvent} from 'react';
 import {useForm} from 'react-hook-form';
@@ -116,7 +117,7 @@ export function ChecklistForm({
             actionResult && !actionResult.success ? actionResult.formErrors.join(' ') : ''
         )} />
 
-        <form className={styles.form} onChange={handleFormChange} onSubmit={submitForm} noValidate>
+        <FormLayout onChange={handleFormChange} onSubmit={submitForm} noValidate>
             <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>Основное</h2>
                 <div className={styles.gridTwo}>
@@ -192,15 +193,14 @@ export function ChecklistForm({
                 </FormField>
             </section>
 
-            <div className={styles.footer}>
+            <FormActions hint="После сохранения проверь страницу чек-листа и сделай build.">
                 <SubmitButton
                     disabled={isSubmitting || (isEditing && !isDirty && !hasSelectedFiles)}
                     aria-busy={isSubmitting}
                 >
                     {isSubmitting ? 'Сохраняю…' : isEditing ? 'Сохранить изменения' : 'Сохранить чек-лист'}
                 </SubmitButton>
-                <p className={styles.footerHint}>После сохранения проверь страницу чек-листа и сделай build.</p>
-            </div>
-        </form>
+            </FormActions>
+        </FormLayout>
     </>;
 }
