@@ -1,6 +1,7 @@
 'use client';
 
 import {PageHeader} from '@/src/components/PageHeader/PageHeader';
+import {EmptyState} from '@/src/components/EmptyState/EmptyState';
 import {useActionState} from 'react';
 import {ButtonLink} from '@/src/components/Button/ButtonLink';
 import type {ChecklistTableItem} from '../../model/checklistTableItem';
@@ -54,7 +55,7 @@ export function ChecklistTable({checklists, deleteAction}: ChecklistTableProps) 
             <p className={styles.warning} role="status" key={warning}>{warning}</p>,
         )}
 
-        {checklists.length === 0 ? <div className={styles.empty}>Пока нет ни одного чек-листа.</div> :
+        {checklists.length === 0 ? <EmptyState>Пока нет ни одного чек-листа.</EmptyState> :
             <DragScroll>
                 <table className={styles.table}>
                     <thead><tr>

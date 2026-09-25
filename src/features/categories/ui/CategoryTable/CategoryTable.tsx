@@ -1,4 +1,6 @@
 import {PageHeader} from '@/src/components/PageHeader/PageHeader';
+import {TableContainer} from '@/src/components/TableContainer/TableContainer';
+import {EmptyState} from '@/src/components/EmptyState/EmptyState';
 import {ButtonLink} from '@/src/components/Button/ButtonLink';
 import type {CategoryListItem} from '../../model/categoryListItem';
 import styles from './CategoryTable.module.css';
@@ -17,8 +19,8 @@ export function CategoryTable({categories}: {categories: CategoryListItem[]}) {
         />
 
         {categories.length === 0
-            ? <div className={styles.empty}>Пока нет ни одной категории.</div>
-            : <div className={styles.tableWrap}>
+            ? <EmptyState>Пока нет ни одной категории.</EmptyState>
+            : <TableContainer>
                 <table className={styles.table}>
                     <thead><tr>
                         <th>Slug</th>
@@ -49,6 +51,6 @@ export function CategoryTable({categories}: {categories: CategoryListItem[]}) {
                         </ButtonLink></td>
                     </tr>)}</tbody>
                 </table>
-            </div>}
+            </TableContainer>}
     </>;
 }

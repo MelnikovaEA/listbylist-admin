@@ -1,8 +1,4 @@
-.tableWrap { overflow-x: auto; border: 1px solid #eadfd5; border-radius: 20px; background: #fff; box-shadow: 0 12px 38px rgba(72, 52, 38, .06); }
-.table { width: 100%; min-width: 920px; border-collapse: separate; border-spacing: 0; }
-.table th { padding: 14px 16px; color: #786d65; background: #fff8f2; font-size: 12px; letter-spacing: .04em; text-align: left; text-transform: uppercase; white-space: nowrap; }
-.table td { padding: 16px; border-top: 1px solid #f0e7df; color: #544a43; vertical-align: top; }
+.table { min-width: 920px; }
 .slug { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; }
 .description { min-width: 280px; line-height: 1.45; }
 .date { min-width: 150px; white-space: nowrap; }
-.empty { padding: 36px; border: 1px dashed #ddcbbf; border-radius: 20px; color: #786d65; text-align: center; }

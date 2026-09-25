@@ -2,6 +2,7 @@
 
 import type { PointerEvent, ReactNode } from 'react';
 import { useRef } from 'react';
+import {TableContainer} from '@/src/components/TableContainer/TableContainer';
 import styles from './ChecklistTable.module.css';
 
 export function DragScroll({ children }: { children: ReactNode }) {
@@ -44,7 +45,7 @@ export function DragScroll({ children }: { children: ReactNode }) {
     }
 
     return (
-        <div
+        <TableContainer
             ref={containerRef}
             className={styles.tableWrap}
             onPointerDown={handlePointerDown}
@@ -60,6 +61,6 @@ export function DragScroll({ children }: { children: ReactNode }) {
             }}
         >
             {children}
-        </div>
+        </TableContainer>
     );
 }
