@@ -1,13 +1,11 @@
-import styles from '../adminPage.module.css';
+import {PageHeader} from '@/src/components/PageHeader/PageHeader';
 
 export default function AdminSettingsPage() {
   return (
-    <>
-      <header className={styles.header}>
-        <p>Сайт</p>
-        <h1>Настройки</h1>
-        <span>Здесь появятся управление рекламой и другие параметры сайта.</span>
-      </header>
-    </>
+    <PageHeader
+      eyebrow="Сайт"
+      title="Настройки"
+      description="Здесь появятся управление рекламой и другие параметры сайта."
+    />
   );
 }

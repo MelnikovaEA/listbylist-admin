@@ -1,15 +1,3 @@
-.headerRow {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    align-items: flex-end;
-    justify-content: space-between;
-}
-
-.header p { margin: 0 0 7px; color: #9a705e; font-size: 12px; font-weight: 750; letter-spacing: .07em; text-transform: uppercase; }
-.header h1 { margin: 0; color: #342d28; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; }
-.header span { display: block; margin-top: 10px; color: #786d65; }
-
 .createLink,
 .editLink {
     display: inline-flex;
@@ -24,7 +12,7 @@
 .createLink:hover { background: #bd6555; }
 
 .warning {
-    margin: 20px 0 0;
+    margin: 0 0 20px;
     padding: 12px 14px;
     border: 1px solid #e5bd75;
     border-radius: 12px;
@@ -34,7 +22,6 @@
 
 .tableWrap {
     overflow-x: auto;
-    margin-top: 28px;
     border: 1px solid #eadfd5;
     border-radius: 20px;
     background: #fff;
@@ -83,4 +70,4 @@
 .actionsCell { position: sticky !important; right: 0; z-index: 2 !important; background: #fff8f2 !important; box-shadow: -8px 0 14px rgba(72, 52, 38, .05); }
 .actionsCell { width: 90px; min-width: 90px; padding-inline: 10px !important; background: #fff !important; }
 
-.empty { margin-top: 28px; padding: 36px; border: 1px dashed #ddcbbf; border-radius: 20px; color: #786d65; text-align: center; }
+.empty { padding: 36px; border: 1px dashed #ddcbbf; border-radius: 20px; color: #786d65; text-align: center; }

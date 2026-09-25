@@ -1,5 +1,6 @@
 'use client';
 
+import {PageHeader} from '@/src/components/PageHeader/PageHeader';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useEffect, useRef, useState, type ChangeEvent, type SubmitEvent} from 'react';
 import {useForm} from 'react-hook-form';
@@ -110,11 +111,11 @@ export function CategoryForm({action, iconUrl, initialValues, slug}: CategoryFor
     const formErrors = actionResult && !actionResult.success ? actionResult.formErrors : [];
 
     return <>
-        <header className={styles.header}>
-            <p>Категории</p>
-            <h1>Редактировать категорию</h1>
-            <span>Изменения применятся ко всем связанным чек-листам.</span>
-        </header>
+        <PageHeader
+            eyebrow="Категории"
+            title="Редактировать категорию"
+            description="Изменения применятся ко всем связанным чек-листам."
+        />
 
         {actionResult?.success && <FormSuccessFeedback
             message={<>Категория «{actionResult.title}» обновлена.</>}

@@ -1,5 +1,6 @@
 'use client';
 
+import {PageHeader} from '@/src/components/PageHeader/PageHeader';
 import {useActionState} from 'react';
 import Link from 'next/link';
 import type {ChecklistTableItem} from '../../model/checklistTableItem';
@@ -42,14 +43,12 @@ export function ChecklistTable({checklists, deleteAction}: ChecklistTableProps) 
     });
 
     return <>
-        <div className={styles.headerRow}>
-            <header className={styles.header}>
-                <p>Контент</p>
-                <h1>Чек-листы</h1>
-                <span>Всего: {checklists.length}</span>
-            </header>
-            <Link className={styles.createLink} href="/admin/checklists/new">Создать чек-лист</Link>
-        </div>
+        <PageHeader
+            eyebrow="Контент"
+            title="Чек-листы"
+            description={<>Всего: {checklists.length}</>}
+            actions={<Link className={styles.createLink} href="/admin/checklists/new">Создать чек-лист</Link>}
+        />
 
         {deleteResult.warnings.map((warning) =>
             <p className={styles.warning} role="status" key={warning}>{warning}</p>,

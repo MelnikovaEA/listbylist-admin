@@ -1,0 +1,43 @@
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 28px;
+}
+
+.content {
+    min-width: 0;
+}
+
+.eyebrow {
+    margin: 0 0 7px;
+    color: #9a705e;
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+}
+
+.title {
+    margin: 0;
+    color: #342d28;
+    font-size: clamp(26px, 4vw, 34px);
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+}
+
+.description {
+    max-width: 720px;
+    margin: 10px 0 0;
+    color: #786d65;
+    line-height: 1.6;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}

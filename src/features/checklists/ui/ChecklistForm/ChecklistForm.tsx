@@ -1,5 +1,6 @@
 'use client';
 
+import {PageHeader} from '@/src/components/PageHeader/PageHeader';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useState, type SubmitEvent} from 'react';
 import {useForm} from 'react-hook-form';
@@ -100,11 +101,11 @@ export function ChecklistForm({
     };
 
     return <>
-        <header className={styles.header}>
-            <p className={styles.eyebrow}>Локальная админка</p>
-            <h1 className={styles.title}>{isEditing ? 'Редактировать чек-лист' : 'Добавить чек-лист'}</h1>
-            <p className={styles.description}>Заполни форму и загрузи исходный checklist.png и checklist.pdf. WebP-версии для карточек и просмотра создадутся автоматически.</p>
-        </header>
+        <PageHeader
+            eyebrow="Локальная админка"
+            title={isEditing ? 'Редактировать чек-лист' : 'Добавить чек-лист'}
+            description="Заполни форму и загрузи исходный checklist.png и checklist.pdf. WebP-версии для карточек и просмотра создадутся автоматически."
+        />
 
         {actionResult?.success && <FormSuccessFeedback
             message={<>Чек-лист «{actionResult.title}» {isEditing ? 'обновлён' : 'сохранён'}.</>}

@@ -1,29 +1,6 @@
-.header p {
-  margin: 0 0 7px;
-  color: #9a705e;
-  font-size: 12px;
-  font-weight: 750;
-  letter-spacing: .07em;
-  text-transform: uppercase;
-}
-
-.header h1 {
-  margin: 0;
-  color: #342d28;
-  font-size: clamp(30px, 5vw, 42px);
-  line-height: 1.1;
-}
-
-.header span {
-  display: block;
-  margin-top: 10px;
-  color: #786d65;
-}
-
 .cards {
   display: grid;
   gap: 16px;
-  margin-top: 32px;
 }
 
 .cards a {

@@ -1,3 +1,4 @@
+import {PageHeader} from '@/src/components/PageHeader/PageHeader';
 import Link from 'next/link';
 import type {CategoryListItem} from '../../model/categoryListItem';
 import styles from './CategoryTable.module.css';
@@ -9,11 +10,11 @@ const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
 
 export function CategoryTable({categories}: {categories: CategoryListItem[]}) {
     return <>
-        <header className={styles.header}>
-            <p>Контент</p>
-            <h1>Категории</h1>
-            <span>Всего: {categories.length}</span>
-        </header>
+        <PageHeader
+            eyebrow="Контент"
+            title="Категории"
+            description={<>Всего: {categories.length}</>}
+        />
 
         {categories.length === 0
             ? <div className={styles.empty}>Пока нет ни одной категории.</div>

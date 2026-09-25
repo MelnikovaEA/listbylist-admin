@@ -1,14 +1,15 @@
+import {PageHeader} from '@/src/components/PageHeader/PageHeader';
 import Link from "next/link";
 import styles from './adminPage.module.css';
 
 export default function AdminDashboardPage() {
   return (
     <>
-      <header className={styles.header}>
-        <p>Администрирование</p>
-        <h1>Обзор</h1>
-        <span>Управление содержимым и настройками сайта.</span>
-      </header>
+      <PageHeader
+        eyebrow="Администрирование"
+        title="Обзор"
+        description="Управление содержимым и настройками сайта."
+      />
 
       <div className={styles.cards}>
         <Link href="/admin/checklists">
