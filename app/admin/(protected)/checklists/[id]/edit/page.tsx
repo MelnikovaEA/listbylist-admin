@@ -36,27 +36,25 @@ export default async function EditChecklistPage({ params }: EditChecklistPagePro
     const previewUrl = getChecklistPreviewUrl(checklist.assets);
 
     return (
-        <main>
-            <ChecklistForm
-                action={updateChecklistAction.bind(null, checklist.id)}
-                categories={categories}
-                initialPreviewUrl={previewUrl}
-                initialValues={{
-                    title: checklist.title,
-                    slug: checklist.slug,
-                    categorySlug: checklist.category.slug,
-                    categoryTitle: checklist.category.title,
-                    categoryDescription: checklist.category.description,
-                    status: checklist.status,
-                    subtitle: checklist.subtitle ?? '',
-                    intro: checklist.intro,
-                    description: checklist.description,
-                    seoTitle: checklist.seoTitle,
-                    seoDescription: checklist.seoDescription,
-                    items: checklist.items.map((item) => item.text).join('\n'),
-                    tags: checklist.tags.map(({ tag }) => tag.title).join(', '),
-                }}
-            />
-        </main>
+        <ChecklistForm
+            action={updateChecklistAction.bind(null, checklist.id)}
+            categories={categories}
+            initialPreviewUrl={previewUrl}
+            initialValues={{
+                title: checklist.title,
+                slug: checklist.slug,
+                categorySlug: checklist.category.slug,
+                categoryTitle: checklist.category.title,
+                categoryDescription: checklist.category.description,
+                status: checklist.status,
+                subtitle: checklist.subtitle ?? '',
+                intro: checklist.intro,
+                description: checklist.description,
+                seoTitle: checklist.seoTitle,
+                seoDescription: checklist.seoDescription,
+                items: checklist.items.map((item) => item.text).join('\n'),
+                tags: checklist.tags.map(({ tag }) => tag.title).join(', '),
+            }}
+        />
     );
 }

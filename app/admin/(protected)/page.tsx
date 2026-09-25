@@ -3,7 +3,7 @@ import styles from './adminPage.module.css';
 
 export default function AdminDashboardPage() {
   return (
-    <main className={styles.page}>
+    <>
       <header className={styles.header}>
         <p>Администрирование</p>
         <h1>Обзор</h1>
@@ -24,6 +24,6 @@ export default function AdminDashboardPage() {
           <span>Реклама и другие параметры сайта.</span>
         </Link>
       </div>
-    </main>
+    </>
   );
 }

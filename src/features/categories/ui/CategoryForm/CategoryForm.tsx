@@ -109,7 +109,7 @@ export function CategoryForm({action, iconUrl, initialValues, slug}: CategoryFor
 
     const formErrors = actionResult && !actionResult.success ? actionResult.formErrors : [];
 
-    return <main className={styles.page}>
+    return <>
         <header className={styles.header}>
             <p>Категории</p>
             <h1>Редактировать категорию</h1>
@@ -194,5 +194,5 @@ export function CategoryForm({action, iconUrl, initialValues, slug}: CategoryFor
                 {isSubmitting ? 'Сохраняю…' : 'Сохранить изменения'}
             </SubmitButton>
         </form>
-    </main>;
+    </>;
 }

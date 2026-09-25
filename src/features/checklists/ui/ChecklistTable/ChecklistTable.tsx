@@ -41,7 +41,7 @@ export function ChecklistTable({checklists, deleteAction}: ChecklistTableProps) 
         warnings: [],
     });
 
-    return <main className={styles.page}>
+    return <>
         <div className={styles.headerRow}>
             <header className={styles.header}>
                 <p>Контент</p>
@@ -127,5 +127,5 @@ export function ChecklistTable({checklists, deleteAction}: ChecklistTableProps) 
                     </tr>)}</tbody>
                 </table>
             </DragScroll>}
-    </main>;
+    </>;
 }

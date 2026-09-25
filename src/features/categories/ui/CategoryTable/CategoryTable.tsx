@@ -8,7 +8,7 @@ const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
 });
 
 export function CategoryTable({categories}: {categories: CategoryListItem[]}) {
-    return <main className={styles.page}>
+    return <>
         <header className={styles.header}>
             <p>Контент</p>
             <h1>Категории</h1>
@@ -41,5 +41,5 @@ export function CategoryTable({categories}: {categories: CategoryListItem[]}) {
                     </tr>)}</tbody>
                 </table>
             </div>}
-    </main>;
+    </>;
 }

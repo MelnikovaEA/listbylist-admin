@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import {PageContainer} from '@/src/components/PageContainer/PageContainer';
 import { assertAdminPageEnabled } from "@/src/lib/admin/adminGuard";
 import styles from './layout.module.css';
 
@@ -28,7 +29,9 @@ export default function ProtectedAdminLayout({ children }: { children: ReactNode
         </a>
       </aside>
 
-      <div className={styles.content}>{children}</div>
+      <div className={styles.content}>
+        <PageContainer>{children}</PageContainer>
+      </div>
     </div>
   );
 }

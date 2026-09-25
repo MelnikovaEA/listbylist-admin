@@ -99,7 +99,7 @@ export function ChecklistForm({
         })(event);
     };
 
-    return <div className={styles.page}>
+    return <>
         <header className={styles.header}>
             <p className={styles.eyebrow}>Локальная админка</p>
             <h1 className={styles.title}>{isEditing ? 'Редактировать чек-лист' : 'Добавить чек-лист'}</h1>
@@ -201,5 +201,5 @@ export function ChecklistForm({
                 <p className={styles.footerHint}>После сохранения проверь страницу чек-листа и сделай build.</p>
             </div>
         </form>
-    </div>;
+    </>;
 }
