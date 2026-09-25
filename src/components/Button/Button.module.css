@@ -1,0 +1,74 @@
+.button {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: fit-content;
+    border: 0;
+    border-radius: 999px;
+    font: inherit;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.default {
+    min-height: 48px;
+    padding: 12px 24px;
+}
+
+.icon {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+}
+
+.icon svg {
+    width: 17px;
+    height: 17px;
+    fill: currentColor;
+}
+
+.primary {
+    color: #ffffff;
+    background: #d97865;
+}
+
+.primary:hover:not(:disabled) {
+    background: #bd6555;
+}
+
+.secondary {
+    color: #7e5548;
+    background: #f7e8df;
+}
+
+.secondary:hover:not(:disabled) {
+    background: #eed7c9;
+}
+
+.danger {
+    color: #a13f32;
+    background: #fff0ed;
+}
+
+.danger:hover:not(:disabled) {
+    background: #f9ddd7;
+}
+
+.button:focus-visible {
+    outline: 2px solid #8c594d;
+    outline-offset: 3px;
+}
+
+.button:disabled {
+    cursor: not-allowed;
+    opacity: .65;
+}
+
+.button[aria-busy="true"] {
+    cursor: wait;
+}

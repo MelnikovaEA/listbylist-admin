@@ -9,7 +9,7 @@ import {createChecklistAction} from '@/app/admin/(protected)/checklists/new/acti
 import {FieldTooltip} from '@/src/components/FieldFeedback/FieldFeedback';
 import {FormField} from '@/src/components/FormField/FormField';
 import {FormErrorFeedback, FormSuccessFeedback} from '@/src/components/FormFeedback/FormFeedback';
-import {SubmitButton} from '@/src/components/SubmitButton/SubmitButton';
+import {Button} from '@/src/components/Button/Button';
 import type {CategoryOption} from '@/src/features/categories/model/categoryOption';
 import type {ChecklistFormActionResult} from '../../form/action';
 import {
@@ -194,12 +194,13 @@ export function ChecklistForm({
             </section>
 
             <FormActions hint="После сохранения проверь страницу чек-листа и сделай build.">
-                <SubmitButton
+                <Button
+                    type="submit"
                     disabled={isSubmitting || (isEditing && !isDirty && !hasSelectedFiles)}
                     aria-busy={isSubmitting}
                 >
                     {isSubmitting ? 'Сохраняю…' : isEditing ? 'Сохранить изменения' : 'Сохранить чек-лист'}
-                </SubmitButton>
+                </Button>
             </FormActions>
         </FormLayout>
     </>;

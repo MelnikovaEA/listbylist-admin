@@ -2,7 +2,7 @@
 
 import {PageHeader} from '@/src/components/PageHeader/PageHeader';
 import {useActionState} from 'react';
-import Link from 'next/link';
+import {ButtonLink} from '@/src/components/Button/ButtonLink';
 import type {ChecklistTableItem} from '../../model/checklistTableItem';
 import type {DeleteChecklistResult} from '../../services/deleteChecklist';
 import {DeleteChecklistButton} from './DeleteChecklistButton';
@@ -47,7 +47,7 @@ export function ChecklistTable({checklists, deleteAction}: ChecklistTableProps) 
             eyebrow="Контент"
             title="Чек-листы"
             description={<>Всего: {checklists.length}</>}
-            actions={<Link className={styles.createLink} href="/admin/checklists/new">Создать чек-лист</Link>}
+            actions={<ButtonLink href="/admin/checklists/new">Создать чек-лист</ButtonLink>}
         />
 
         {deleteResult.warnings.map((warning) =>
@@ -110,14 +110,15 @@ export function ChecklistTable({checklists, deleteAction}: ChecklistTableProps) 
                         <td className={styles.dateCell}>{formatDate(checklist.createdAt)}</td>
                         <td className={styles.dateCell}>{formatDate(checklist.updatedAt)}</td>
                         <td className={styles.actionsCell}><div className={styles.rowActions}>
-                            <Link
-                                className={styles.editLink}
+                            <ButtonLink
+                                variant="secondary"
+                                size="icon"
                                 href={`/admin/checklists/${checklist.id}/edit`}
                                 aria-label={`Редактировать чек-лист «${checklist.title}»`}
                                 title="Редактировать"
                             ><svg viewBox="0 0 24 24" aria-hidden="true">
                                 <path d="M4 20h4.2L19 9.2 14.8 5 4 15.8V20Zm2-3.4 8.8-8.8 1.4 1.4L7.4 18H6v-1.4ZM17.6 2.2a2 2 0 0 1 2.8 0l1.4 1.4a2 2 0 0 1 0 2.8L20.4 7.8 16.2 3.6l1.4-1.4Z" />
-                            </svg></Link>
+                            </svg></ButtonLink>
                             <form action={submitDelete}>
                                 <input type="hidden" name="id" value={checklist.id} />
                                 <DeleteChecklistButton title={checklist.title} />

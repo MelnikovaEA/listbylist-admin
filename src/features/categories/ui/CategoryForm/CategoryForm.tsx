@@ -7,7 +7,7 @@ import {useEffect, useRef, useState, type ChangeEvent, type SubmitEvent} from 'r
 import {useForm} from 'react-hook-form';
 import {FormField} from '@/src/components/FormField/FormField';
 import {FormErrorFeedback, FormSuccessFeedback} from '@/src/components/FormFeedback/FormFeedback';
-import {SubmitButton} from '@/src/components/SubmitButton/SubmitButton';
+import {Button} from '@/src/components/Button/Button';
 import type {CategoryFormActionResult} from '../../form/action';
 import {
     categoryFormSchema,
@@ -193,9 +193,9 @@ export function CategoryForm({action, iconUrl, initialValues, slug}: CategoryFor
                 </label>
             </section>
             <FormActions>
-                <SubmitButton disabled={!hasChanges || isSubmitting} aria-busy={isSubmitting}>
+                <Button type="submit" disabled={!hasChanges || isSubmitting} aria-busy={isSubmitting}>
                     {isSubmitting ? 'Сохраняю…' : 'Сохранить изменения'}
-                </SubmitButton>
+                </Button>
             </FormActions>
         </FormLayout>
     </>;

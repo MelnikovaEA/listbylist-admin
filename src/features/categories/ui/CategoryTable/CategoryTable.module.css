@@ -5,5 +5,4 @@
 .slug { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; }
 .description { min-width: 280px; line-height: 1.45; }
 .date { min-width: 150px; white-space: nowrap; }
-.editLink { color: #a95142; font-weight: 700; text-underline-offset: 3px; }
 .empty { padding: 36px; border: 1px dashed #ddcbbf; border-radius: 20px; color: #786d65; text-align: center; }
