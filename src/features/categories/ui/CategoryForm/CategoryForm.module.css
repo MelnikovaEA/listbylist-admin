@@ -2,9 +2,4 @@
 .iconLabel { color: #2f2a25; font-size: 14px; font-weight: 700; }
 .previewBlock { display: grid; gap: 6px; width: fit-content; color: #695f59; font-size: 13px; font-weight: 700; }
 .iconPreview { display: block; width: 128px; height: 128px; border: 1px solid #efe2d5; border-radius: 16px; object-fit: contain; background: #fffdf9; }
-.fileField { display: grid; gap: 8px; padding: 14px 14px 25px; border: 1px dashed #e7cdbf; border-radius: 18px; color: #2f2a25; background: #fff9f2; font-size: 14px; font-weight: 700; }
-.fileLabel { width: fit-content; }
-.fileField input { width: 100%; border: 1px solid #efe2d5; border-radius: 14px; padding: 12px 14px; color: transparent; background: #fffdf9; font: inherit; }
-.fileField input::file-selector-button { color: #2f2a25; }
-.clearIcon { width: fit-content; border: 0; padding: 0; color: #9a705e; background: transparent; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .removeIcon { display: flex; gap: 8px; align-items: center; width: fit-content; color: #2f2a25; font-size: 14px; font-weight: 600; }

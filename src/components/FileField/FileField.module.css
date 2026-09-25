@@ -1,0 +1,50 @@
+.field {
+    display: grid;
+    min-width: 0;
+    gap: 12px;
+    padding: 14px;
+    border: 1px dashed #e7cdbf;
+    border-radius: 18px;
+    color: #2f2a25;
+    background: #fff9f2;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.labelRow {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.input {
+    width: 100%;
+    min-width: 0;
+    border: 1px solid #efe2d5;
+    border-radius: 14px;
+    padding: 12px 14px;
+    color: #2f2a25;
+    background: #fffdf9;
+    font: inherit;
+}
+
+.input::file-selector-button {
+    margin-right: 8px;
+    color: #2f2a25;
+    cursor: pointer;
+}
+
+.input:focus-visible {
+    outline: 2px solid #8c594d;
+    outline-offset: 3px;
+}
+
+.input:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+}
+
+.input[aria-invalid="true"] {
+    border-color: #c85b4a;
+    background: #fff7f5;
+}

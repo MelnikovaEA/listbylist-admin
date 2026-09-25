@@ -1,7 +1,7 @@
 'use client';
 
-import {useEffect, useState, type ChangeEvent} from 'react';
-import {FieldError, FieldTooltip} from '@/src/components/FieldFeedback/FieldFeedback';
+import {useEffect, useState} from 'react';
+import {FileField} from '@/src/components/FileField/FileField';
 import styles from './FileFields.module.css';
 
 type FileFieldsProps = {
@@ -38,14 +38,12 @@ export function FileFields({
         onSelectionChange(Boolean(selectedPreviewUrl || selectedPdfPreviewUrl));
     }, [onSelectionChange, selectedPdfPreviewUrl, selectedPreviewUrl]);
 
-    const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const file = event.currentTarget.files?.[0];
+    const handleImageChange = (file: File | null) => {
         const nextPreviewUrl = file ? URL.createObjectURL(file) : null;
         setSelectedPreviewUrl(nextPreviewUrl);
     };
 
-    const handlePdfChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const file = event.currentTarget.files?.[0];
+    const handlePdfChange = (file: File | null) => {
         const nextPdfPreviewUrl = file ? URL.createObjectURL(file) : null;
         setSelectedPdfPreviewUrl(nextPdfPreviewUrl);
     };
@@ -64,11 +62,16 @@ export function FileFields({
         </div>}
         {isEditing && !initialPreviewUrl &&
             <p className={styles.previewUnavailable}>Текущий preview недоступен</p>}
-        <div className={styles.gridThree}>
-            <label className={styles.fileField}>
-                <span className={styles.labelText}>
-                    checklist.png <FieldTooltip text="Оригинал из Canva. Из него автоматически создадутся preview.webp и view.webp." />
-                </span>
+        <div className={styles.gridTwo}>
+            <FileField
+                name="image"
+                label="checklist.png"
+                accept=".png,image/png"
+                hint="Оригинал из Canva. Из него автоматически создадутся preview.webp и view.webp."
+                error={imageError}
+                hasSelectedFile={Boolean(selectedPreviewUrl)}
+                onFileChange={handleImageChange}
+            >
                 {/* Blob URLs from local file inputs cannot be optimized by next/image. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 {selectedPreviewUrl && <img
@@ -76,36 +79,23 @@ export function FileFields({
                     src={selectedPreviewUrl}
                     alt="Предпросмотр нового изображения чек-листа"
                 />}
-                <input
-                    className={selectedPreviewUrl ? styles.fileSelected : undefined}
-                    name="image"
-                    type="file"
-                    accept=".png,image/png"
-                    onChange={handleImageChange}
-                    aria-invalid={Boolean(imageError)}
-                />
-                <FieldError message={imageError} />
-            </label>
-            <label className={styles.fileField}>
-                <span className={styles.labelText}>
-                    checklist.pdf <FieldTooltip text="PDF для печати." />
-                </span>
+            </FileField>
+            <FileField
+                name="pdf"
+                label="checklist.pdf"
+                accept=".pdf,application/pdf"
+                hint="PDF для печати."
+                error={pdfError}
+                hasSelectedFile={Boolean(selectedPdfPreviewUrl)}
+                onFileChange={handlePdfChange}
+            >
                 {selectedPdfPreviewUrl && <iframe
                     className={styles.pdfPreview}
                     src={`${selectedPdfPreviewUrl}#page=1&view=FitH`}
                     title="Предпросмотр PDF чек-листа"
                     loading="lazy"
                 />}
-                <input
-                    className={selectedPdfPreviewUrl ? styles.fileSelected : undefined}
-                    name="pdf"
-                    type="file"
-                    accept=".pdf,application/pdf"
-                    onChange={handlePdfChange}
-                    aria-invalid={Boolean(pdfError)}
-                />
-                <FieldError message={pdfError} />
-            </label>
+            </FileField>
         </div>
     </section>;
 }

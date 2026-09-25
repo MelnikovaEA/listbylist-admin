@@ -3,11 +3,12 @@
 import {PageHeader} from '@/src/components/PageHeader/PageHeader';
 import {FormActions, FormLayout} from '@/src/components/FormLayout/FormLayout';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {useEffect, useRef, useState, type ChangeEvent, type SubmitEvent} from 'react';
+import {useEffect, useRef, useState, type SubmitEvent} from 'react';
 import {useForm} from 'react-hook-form';
 import {FormField} from '@/src/components/FormField/FormField';
 import {FormErrorFeedback, FormSuccessFeedback} from '@/src/components/FormFeedback/FormFeedback';
 import {Button} from '@/src/components/Button/Button';
+import {FileField} from '@/src/components/FileField/FileField';
 import type {CategoryFormActionResult} from '../../form/action';
 import {
     categoryFormSchema,
@@ -61,18 +62,8 @@ export function CategoryForm({action, iconUrl, initialValues, slug}: CategoryFor
         setUnexpectedError('');
     };
 
-    const handleIconChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const file = event.currentTarget.files?.[0];
-
+    const handleIconChange = (file: File | null) => {
         setSelectedIconUrl(file ? URL.createObjectURL(file) : null);
-    };
-
-    const clearSelectedIcon = () => {
-        if (iconInputRef.current) {
-            iconInputRef.current.value = '';
-        }
-
-        setSelectedIconUrl(null);
     };
 
     const submitForm = (event: SubmitEvent<HTMLFormElement>) => {
@@ -163,7 +154,16 @@ export function CategoryForm({action, iconUrl, initialValues, slug}: CategoryFor
                         Удалить иконку
                     </label>}
                 </div>}
-                {selectedIconUrl && <div className={styles.previewBlock}>
+                <FileField
+                    inputRef={iconInputRef}
+                    name="icon"
+                    label="icon.png"
+                    accept=".png,image/png"
+                    disabled={hasRemoveIcon}
+                    hasSelectedFile={hasSelectedIcon}
+                    onFileChange={handleIconChange}
+                >
+                    {selectedIconUrl && <div className={styles.previewBlock}>
                         <span>Новая иконка</span>
                         {/* Blob URLs from local file inputs cannot be optimized by next/image. */}
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -174,23 +174,8 @@ export function CategoryForm({action, iconUrl, initialValues, slug}: CategoryFor
                             width={128}
                             height={128}
                         />
-                        <button
-                            className={styles.clearIcon}
-                            type="button"
-                            onClick={clearSelectedIcon}
-                        >Отменить выбор</button>
                     </div>}
-                <label className={styles.fileField}>
-                    <span className={styles.fileLabel}>icon.png</span>
-                    <input
-                        ref={iconInputRef}
-                        name="icon"
-                        type="file"
-                        accept=".png,image/png"
-                        disabled={hasRemoveIcon}
-                        onChange={handleIconChange}
-                    />
-                </label>
+                </FileField>
             </section>
             <FormActions>
                 <Button type="submit" disabled={!hasChanges || isSubmitting} aria-busy={isSubmitting}>
