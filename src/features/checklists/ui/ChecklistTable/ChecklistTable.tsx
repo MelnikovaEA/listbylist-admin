@@ -83,7 +83,7 @@ export function ChecklistTable({checklists, deleteAction}: ChecklistTableProps) 
                             : 'Файл недоступен'}</td>
                         <td className={styles.textCell}>{checklist.subtitle || '—'}</td>
                         <td className={styles.textCell}>{checklist.intro}</td>
-                        <td className={styles.textCell}>{checklist.description}</td>
+                        <td className={`${styles.textCell} ${styles.descriptionCell}`}>{checklist.description}</td>
                         <td className={styles.textCell}>{checklist.seoTitle}</td>
                         <td className={styles.textCell}>{checklist.seoDescription}</td>
                         <td><span className={`${styles.status} ${styles[statusClassNames[checklist.status]]}`}>

@@ -103,7 +103,7 @@ export function ChecklistForm({
 
     return <>
         <PageHeader
-            eyebrow="Локальная админка"
+            eyebrow="Чеклисты"
             title={isEditing ? 'Редактировать чек-лист' : 'Добавить чек-лист'}
             description="Заполни форму и загрузи исходный checklist.png и checklist.pdf. WebP-версии для карточек и просмотра создадутся автоматически."
         />
@@ -155,8 +155,13 @@ export function ChecklistForm({
                 <FormField label="Intro *" error={getFieldError('intro')}>
                     <textarea {...register('intro')} aria-invalid={Boolean(getFieldError('intro'))} placeholder="Короткое вступление для карточки и начала страницы." />
                 </FormField>
-                <FormField label="Описание *" error={getFieldError('description')}>
-                    <textarea {...register('description')} aria-invalid={Boolean(getFieldError('description'))} placeholder="Более подробное описание чек-листа." />
+                <FormField
+                    label="Описание *"
+                    error={getFieldError('description')}
+                    hint="Разделяй абзацы пустой строкой (Enter дважды). Переносы строк сохраняются."
+                    hintId="description-hint"
+                >
+                    <textarea {...register('description')} rows={8} aria-describedby="description-hint" aria-invalid={Boolean(getFieldError('description'))} placeholder={'Первый абзац описания чек-листа.\n\nВторой абзац описания.'} />
                 </FormField>
             </section>
 

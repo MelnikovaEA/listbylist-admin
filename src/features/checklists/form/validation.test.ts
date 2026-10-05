@@ -40,6 +40,19 @@ test('validateChecklistForm validates and normalizes the complete form', () => {
     assert.deepEqual(result.data.tags, ['лето', 'пикник', 'список вещей']);
 });
 
+test('validateChecklistForm preserves description paragraphs and line breaks', () => {
+    for (const newline of ['\n', '\r\n']) {
+        const formData = createValidFormData();
+        const description = ['Первый абзац.', '', 'Второй абзац.', 'Продолжение второго абзаца.'].join(newline);
+        formData.set('description', `  ${description}  `);
+
+        const result = validateChecklistForm(formData);
+
+        assert.equal(result.success, true);
+        assert.equal(result.success ? result.data.description : null, description);
+    }
+});
+
 test('validateChecklistForm creates the default category description', () => {
     const result = validateChecklistForm(createValidFormData());
 
