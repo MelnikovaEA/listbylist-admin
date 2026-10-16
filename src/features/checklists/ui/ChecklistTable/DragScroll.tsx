@@ -13,7 +13,7 @@ export function DragScroll({ children }: { children: ReactNode }) {
 
     function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
         if (event.pointerType !== 'mouse' || event.button !== 0) return;
-        if ((event.target as HTMLElement).closest('a, button, input, select, textarea')) return;
+        if ((event.target as HTMLElement).closest('a, button, input, select, textarea, [data-no-drag]')) return;
 
         const container = containerRef.current;
         if (!container) return;

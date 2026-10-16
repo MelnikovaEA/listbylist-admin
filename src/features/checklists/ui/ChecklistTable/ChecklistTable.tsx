@@ -83,7 +83,15 @@ export function ChecklistTable({checklists, deleteAction}: ChecklistTableProps) 
                             : 'Файл недоступен'}</td>
                         <td className={styles.textCell}>{checklist.subtitle || '—'}</td>
                         <td className={styles.textCell}>{checklist.intro}</td>
-                        <td className={`${styles.textCell} ${styles.descriptionCell}`}>{checklist.description}</td>
+                        <td className={styles.textCell}>
+                            <div
+                                className={styles.descriptionScroll}
+                                data-no-drag
+                                tabIndex={0}
+                                role="region"
+                                aria-label={`Описание чек-листа «${checklist.title}»`}
+                            >{checklist.description}</div>
+                        </td>
                         <td className={styles.textCell}>{checklist.seoTitle}</td>
                         <td className={styles.textCell}>{checklist.seoDescription}</td>
                         <td><span className={`${styles.status} ${styles[statusClassNames[checklist.status]]}`}>
@@ -96,8 +104,16 @@ export function ChecklistTable({checklists, deleteAction}: ChecklistTableProps) 
                                 <span key={tag.id}>{tag.title}</span>)}</div>
                             : '—'}</td>
                         <td className={styles.listCell}>{checklist.items.length > 0
-                            ? <ol className={styles.items}>{checklist.items.map((item) =>
-                                <li key={item.id}>{item.text}</li>)}</ol>
+                            ? <div
+                                className={styles.itemsScroll}
+                                data-no-drag
+                                tabIndex={0}
+                                role="region"
+                                aria-label={`Пункты чек-листа «${checklist.title}»`}
+                            >
+                                <ol className={styles.items}>{checklist.items.map((item) =>
+                                    <li key={item.id}>{item.text}</li>)}</ol>
+                            </div>
                             : '—'}</td>
                         <td className={styles.listCell}>{checklist.files.length > 0
                             ? <div className={styles.assetLinks}>{checklist.files.map((file) => <a
